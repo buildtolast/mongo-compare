@@ -1,0 +1,10 @@
+{
+  "mongoUri": "mongodb://127.0.0.1:27017",
+  "dbName": "test_db",
+  "collectionBefore": "collection_a",
+  "collectionAfter": "collection_b",
+  "filter": {},
+  "uniqueIdentifierField": "_id",
+  "batchSize": 1000,
+  "outputFile": "comparison-summary.json"
+}
