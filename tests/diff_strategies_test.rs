@@ -3,8 +3,8 @@
 //! This module contains all integration tests for verifying custom diff strategies
 //! in the comparison results.
 
-use mongo_compare::comparison::{compare_documents, find_field_diffs};
-use mongo_compare::types::{DocumentDiff, ChangedField, DiffStrategy};
+use mongo_compare::comparison::find_field_diffs;
+use mongo_compare::types::DiffStrategy;
 use serde_json::json;
 use anyhow::Result;
 

@@ -3,8 +3,8 @@
 //! This module contains all integration tests for verifying that newly added
 //! documents in the "after" collection are correctly identified as created.
 
-    use mongo_compare::comparison::{compare_documents, find_field_diffs};
-    use mongo_compare::types::{DocumentDiff, ChangedField, DiffStrategy};
+    use mongo_compare::comparison::compare_documents;
+    use mongo_compare::types::DiffStrategy;
     use serde_json::json;
     use anyhow::Result;
 
@@ -80,7 +80,7 @@ async fn test_created_documents_various_data_types() -> Result<()> {
         json!({"id": 9, "name": "Test", "array_field": [4, 5, 6]}),
     ];
 
-    let (created, updated, deleted, sample_updated, sample_created, sample_deleted) =
+    let (created, updated, _deleted, _sample_updated, sample_created, _sample_deleted) =
         compare_documents(docs_before, docs_after, "id", 5, DiffStrategy::All)?;
 
     assert_eq!(created, 4, "Should identify 4 created documents");

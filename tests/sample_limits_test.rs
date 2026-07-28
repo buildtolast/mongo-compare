@@ -3,7 +3,7 @@
 //! This module contains all integration tests for verifying configurable sample limits
 //! in the comparison results.
 
-use mongo_compare::comparison::{compare_documents, find_field_diffs};
+use mongo_compare::comparison::compare_documents;
 use mongo_compare::types::DiffStrategy;
 use serde_json::json;
 use anyhow::Result;
@@ -56,7 +56,7 @@ async fn test_sample_limit_custom_returns_exact_count() -> Result<()> {
         json!({"id": 5, "name": "Yet Another New Document", "value": 500}),
     ];
 
-    let (created, updated, deleted, sample_updated, sample_created, sample_deleted) =
+    let (created, updated, _deleted, _sample_updated, sample_created, _sample_deleted) =
         compare_documents(docs_before.clone(), docs_after.clone(), "id", 3, DiffStrategy::All)?;
 
     assert_eq!(created, 3, "Should identify 3 created documents");
@@ -96,7 +96,7 @@ async fn test_sample_limit_exceeds_document_count() -> Result<()> {
         json!({"id": 3, "name": "New Document", "value": 300}),
     ];
 
-    let (created, updated, deleted, sample_updated, sample_created, sample_deleted) =
+    let (created, _updated, _deleted, _sample_updated, sample_created, _sample_deleted) =
         compare_documents(docs_before.clone(), docs_after.clone(), "id", 10, DiffStrategy::All)?;
 
     assert_eq!(created, 1, "Should identify 1 created document");
@@ -121,7 +121,7 @@ async fn test_sample_limit_zero_with_updated_documents() -> Result<()> {
         json!({"id": 3, "name": "New Document", "value": 300}),
     ];
 
-    let (created, updated, deleted, sample_updated, sample_created, sample_deleted) =
+    let (created, updated, _deleted, sample_updated, sample_created, _sample_deleted) =
         compare_documents(docs_before.clone(), docs_after.clone(), "id", 0, DiffStrategy::All)?;
 
     assert_eq!(created, 1, "Should identify 1 created document");
@@ -148,7 +148,7 @@ async fn test_sample_limit_zero_with_deleted_documents() -> Result<()> {
         json!({"id": 2, "name": "Document 2", "value": 200}),
     ];
 
-    let (created, updated, deleted, sample_updated, sample_created, sample_deleted) =
+    let (_created, _updated, deleted, _sample_updated, _sample_created, sample_deleted) =
         compare_documents(docs_before.clone(), docs_after.clone(), "id", 0, DiffStrategy::All)?;
 
     assert_eq!(deleted, 1, "Should identify 1 deleted document");
@@ -206,7 +206,7 @@ async fn test_sample_limit_default_five() -> Result<()> {
         json!({"id": 6, "name": "New Document 6", "value": 600}),
     ];
 
-    let (created, updated, deleted, sample_updated, sample_created, sample_deleted) =
+    let (created, _updated, _deleted, _sample_updated, sample_created, _sample_deleted) =
         compare_documents(docs_before.clone(), docs_after.clone(), "id", 5, DiffStrategy::All)?;
 
     assert_eq!(created, 4, "Should identify 4 created documents");

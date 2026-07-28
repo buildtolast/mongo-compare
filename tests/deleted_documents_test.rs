@@ -3,7 +3,7 @@
 //! This module contains all integration tests for verifying that documents removed
 //! from the "after" collection are correctly identified as deleted.
 
-use mongo_compare::comparison::{compare_documents, find_field_diffs};
+use mongo_compare::comparison::compare_documents;
     use mongo_compare::types::DiffStrategy;
     use serde_json::json;
     use anyhow::Result;
@@ -25,7 +25,7 @@ use mongo_compare::comparison::{compare_documents, find_field_diffs};
             json!({"id": 2, "name": "Document 2", "value": 200}),
         ];
 
-        let (created, updated, deleted, sample_updated, sample_created, sample_deleted) =
+        let (created, updated, deleted, sample_updated, _sample_created, sample_deleted) =
             compare_documents(docs_before, docs_after, "id", 5, DiffStrategy::All)?;
 
     assert_eq!(created, 0, "Should not identify any created documents");
