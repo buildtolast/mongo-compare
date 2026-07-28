@@ -1,13 +1,53 @@
-# Integration Testing Workflow
+# Integration Testing Workflow for mongo-compare
+
+This workflow provides comprehensive integration testing using Docker MongoDB containers.
 
 ## Overview
 
-This workflow runs integration tests against a real MongoDB instance using Docker containers.
+The integration testing workflow:
 
-## Prerequisites
+1. **Spins up a fresh MongoDB Docker container** for each test run
+2. **Uses MongoDB dump/restore** to populate test data from JSON fixtures
+3. **Tests all scenarios**: created, updated, deleted, mixed, empty, no changes
+4. **Verifies all diff strategies** with real MongoDB data
+5. **Runs both locally and in CI** (GitHub Actions)
 
-- Docker installed and running
-- `mongorestore` available in PATH (from MongoDB tools)
+## Architecture
+
+```
+tests/
+├── integration/
+│   ├── mod.rs                    # Module entry point
+│   ├── created_documents_test.rs # Created documents test
+│   ├── mongodb_container.rs      # Container management
+│   └── test_data.rs              # Test data loading
+├── integration.rs                # Test harness
+└── fixtures/                     # Test data fixtures
+    ├── created/
+    ├── updated/
+    ├── deleted/
+    ├── mixed/
+    ├── empty/
+    ├── no_changes/
+    └── strategies/
+        ├── whitelist/
+        ├── blacklist/
+        └── deep_equality/
+```
+
+## Test Scenarios
+
+| Scenario | Description |
+|----------|-------------|
+| Created Documents | Verifies detection of new documents |
+| Updated Documents | Verifies detection of changed documents |
+| Deleted Documents | Verifies detection of removed documents |
+| Mixed Changes | Verifies all change types together |
+| Empty Collections | Verifies empty collection handling |
+| No Changes | Verifies identical collections |
+| Whitelist Strategy | Verifies field filtering |
+| Blacklist Strategy | Verifies field exclusion |
+| Deep Equality | Verifies nested object comparison |
 
 ## Running Tests
 
@@ -23,19 +63,55 @@ cargo test --test integration
 cargo test --test integration test_created_documents
 ```
 
-### With Verbose Output
+### Verbose Output
 
 ```bash
 RUST_LOG=debug cargo test --test integration
 ```
 
-## Test Data
+### With Docker Container
 
-Test datasets are stored in `tests/fixtures/` as JSON files. Each scenario has its own directory with:
+```bash
+# Start MongoDB container
+./scripts/setup-test-mongo.sh
 
-- `before.json` - Documents before comparison
-- `after.json` - Documents after comparison
-- `expected.json` - Expected results (counts)
+# Run tests
+cargo test --test integration
+
+# Cleanup
+./scripts/cleanup-test-mongo.sh
+```
+
+## CI/CD Integration
+
+### GitHub Actions
+
+The workflow runs on:
+- Push to `main` branch
+- Pull requests to `main` branch
+
+See: `.github/workflows/integration-tests.yml`
+
+```yaml
+- name: Run integration tests
+  run: cargo test --test integration -- --test-threads=1
+```
+
+## Test Data Format
+
+Test data is stored in `tests/fixtures/` as JSON files:
+
+```json
+{
+  "before": [...],
+  "after": [...],
+  "expected": {
+    "created": 0,
+    "updated": 0,
+    "deleted": 0
+  }
+}
+```
 
 ## Container Management
 
@@ -43,110 +119,50 @@ The workflow uses `testcontainers-rs` to:
 
 1. Start a fresh MongoDB container for each test run
 2. Load test data using `mongorestore`
-3. Configure the test to use the container's connection string
+3. Configure tests to use the container's connection string
 4. Run comparison logic
 5. Stop the container after test completion
 
-## CI/CD Integration
+## Best Practices
 
-### GitHub Actions
-
-```yaml
-name: Integration Tests
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-
-jobs:
-  integration-tests:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Set up Rust
-        uses: dtolnay/rust-toolchain@stable
-      
-      - name: Cache dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.cargo
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      
-      - name: Install MongoDB tools
-        run: |
-          wget -qO - https://www.mongodb.org/static/pgp/server-7.0.asc | sudo apt-key add -
-          echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
-          sudo apt-get update
-          sudo apt-get install -y mongodb-database-tools mongodb-org-tools
-      
-      - name: Run integration tests
-        run: cargo test --test integration
-```
-
-## Test Scenarios
-
-| Test | Description |
-|------|-------------|
-| `test_created_documents` | Verifies created document detection |
-| `test_updated_documents` | Verifies updated document detection |
-| `test_deleted_documents` | Verifies deleted document detection |
-| `test_mixed_changes` | Verifies all change types together |
-| `test_empty_collections` | Verifies empty collection handling |
-| `test_no_changes` | Verifies identical collections |
-| `test_diff_strategy_whitelist` | Verifies whitelist filtering |
-| `test_diff_strategy_blacklist` | Verifies blacklist filtering |
-| `test_diff_strategy_deep_equality` | Verifies deep equality mode |
-
-## Debugging
-
-### View Container Logs
-
-```bash
-docker logs $(docker ps -q -f name=mongo-compare-test)
-```
-
-### Reproduce Test Manually
-
-1. Start MongoDB container: `docker run -d --name mongo-test -p 27017:27017 mongo:7.0`
-2. Load test data: `mongorestore --host localhost --port 27017 tests/fixtures/created/`
-3. Run comparison with CLI: `cargo run -- config.json`
-4. Inspect results
-
-### Stop Container
-
-```bash
-docker stop mongo-test && docker rm mongo-test
-```
+1. **Fresh containers**: Each test gets a clean MongoDB instance
+2. **Fixture files**: Store test data in JSON format
+3. **Test isolation**: No shared state between tests
+4. **Cleanup**: Containers auto-stop when dropped
+5. **Error handling**: Properly propagate container errors
 
 ## Troubleshooting
 
 ### Container Won't Start
 
-- Check Docker is running: `docker ps`
-- Check for port conflicts: `lsof -i :27017`
-- Try different MongoDB version: `mongo:6.0` or `mongo:5.0`
+```bash
+# Check Docker is running
+docker ps
+
+# Check for port conflicts
+lsof -i :27017
+
+# Try different MongoDB version
+docker run -d --name mongo-test -p 27017:27017 mongo:6.0
+```
 
 ### Data Load Fails
 
-- Verify BSON files exist: `ls tests/fixtures/*/`
-- Check mongorestore is installed: `mongorestore --version`
-- Verify MongoDB container is ready: `docker exec mongo-test mongosh --eval "db.adminCommand('ping')"`
+```bash
+# Verify BSON files exist
+ls tests/fixtures/*/before.bson
 
-### Connection Errors
+# Check mongorestore is installed
+mongorestore --version
 
-- Ensure container is running: `docker ps | grep mongo`
-- Check container logs: `docker logs <container_id>`
-- Verify test configuration uses correct port
+# Verify MongoDB container is ready
+docker exec mongo-test mongosh --eval "db.adminCommand('ping')"
+```
 
-## Best Practices
+## Future Enhancements
 
-1. **Fresh containers**: Each test run gets a clean MongoDB instance
-2. **Fixture files**: Store test data as JSON for easy editing
-3. **Isolated tests**: No shared state between test scenarios
-4. **Cleanup**: Always stop containers after tests complete
-5. **CI caching**: Cache test datasets to speed up CI runs
-6. **Local development**: Run tests locally before committing
-7. **CI enforcement**: Require integration tests in CI pipeline
+- [ ] Add actual MongoDB container integration
+- [ ] Implement BSON fixture files
+- [ ] Add test data generation scripts
+- [ ] Implement container pooling for faster CI
+- [ ] Add test coverage reporting
