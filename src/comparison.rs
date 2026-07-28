@@ -148,14 +148,12 @@ pub fn find_field_diffs(
                                 }
                             }
                         }
-                        (None, Some(v_after)) => {
-                            if !v_after.is_object() {
-                                changed_fields.push(ChangedField {
-                                    field_name: field.clone(),
-                                    old_value: "null".to_string(),
-                                    new_value: strip_quotes(&serde_json::to_string(v_after)?),
-                                });
-                            }
+                        (None, Some(v_after)) if !v_after.is_object() => {
+                            changed_fields.push(ChangedField {
+                                field_name: field.clone(),
+                                old_value: "null".to_string(),
+                                new_value: strip_quotes(&serde_json::to_string(v_after)?),
+                            });
                         }
                         _ => {}
                     }
