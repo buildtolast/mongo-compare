@@ -16,9 +16,8 @@
         }
 
         html {
-            scroll-snap-type: y mandatory;
-            scroll-snap-stop: always;
-            scroll-behavior: smooth;
+            scroll-snap-type: none;
+            scroll-behavior: auto;
         }
 
         .slide {
@@ -26,11 +25,13 @@
             height: 100vh;
             height: 100dvh;
             overflow: hidden;
-            scroll-snap-align: start;
-            scroll-snap-stop: always;
-            display: flex;
+            display: none;
             flex-direction: column;
             position: relative;
+        }
+
+        .slide.active {
+            display: flex;
         }
 
         .slide-content {
@@ -294,7 +295,7 @@
             color: white;
         }
 
-        .btn-primary:hover {
+        .btn-primary.wireframe:hover {
             background: #3fb950;
         }
 
@@ -303,7 +304,7 @@
             color: var(--text-primary);
         }
 
-        .btn-secondary:hover {
+        .btn-secondary.wireframe:hover {
             background: #484f58;
         }
 
@@ -335,7 +336,7 @@
             color: var(--text-primary);
         }
 
-        .tab:hover:not(.active) {
+        .tab.wireframe:hover:not(.active) {
             background: var(--border-color);
         }
 
@@ -394,7 +395,7 @@
             transition: transform 0.2s ease;
         }
 
-        .stat-card:hover {
+        .stat-card.wireframe:hover {
             transform: translateY(-2px);
             border-color: var(--text-secondary);
         }
@@ -444,7 +445,7 @@
             transition: all 0.2s ease;
         }
 
-        .export-btn:hover {
+        .export-btn.wireframe:hover {
             border-color: var(--accent-blue);
             background: var(--panel-bg);
         }
@@ -520,7 +521,7 @@
             transition: all 0.2s ease;
         }
 
-        .snapshot-item:hover {
+        .snapshot-item.wireframe:hover {
             border-color: var(--text-secondary);
         }
 
@@ -635,7 +636,7 @@
             transition: all 0.2s ease;
         }
 
-        .grid-card:hover {
+        .grid-card.wireframe:hover {
             border-color: var(--text-secondary);
             transform: translateY(-2px);
         }
@@ -758,9 +759,9 @@
                 </div>
 
                 <div class="button-group">
-                    <button class="btn btn-secondary">Test Connection</button>
-                    <button class="btn btn-secondary">Save as Snapshot</button>
-                    <button class="btn btn-primary">Next: Collections</button>
+                    <button class="btn btn-secondary wireframe">Test Connection</button>
+                    <button class="btn btn-secondary wireframe">Save as Snapshot</button>
+                    <button class="btn btn-primary wireframe">Next: Collections</button>
                 </div>
             </div>
         </div>
@@ -836,8 +837,8 @@
                 </div>
 
                 <div class="button-group">
-                    <button class="btn btn-secondary">Load Snapshot</button>
-                    <button class="btn btn-primary">Run Comparison</button>
+                    <button class="btn btn-secondary wireframe">Load Snapshot</button>
+                    <button class="btn btn-primary wireframe">Run Comparison</button>
                 </div>
             </div>
         </div>
@@ -912,8 +913,8 @@
                 </div>
 
                 <div class="button-group">
-                    <button class="btn btn-secondary">Back</button>
-                    <button class="btn btn-primary">View Details</button>
+                    <button class="btn btn-secondary wireframe">Back</button>
+                    <button class="btn btn-primary wireframe">View Details</button>
                 </div>
             </div>
         </div>
@@ -937,8 +938,8 @@
 
             <div class="wireframe-container" style="margin-top: 3rem;">
                 <div class="tabs">
-                    <div class="tab active">Side by Side</div>
-                    <div class="tab">Unified Diff</div>
+                    <div class="tab active wireframe">Side by Side</div>
+                    <div class="tab wireframe">Unified Diff</div>
                 </div>
 
                 <div class="wireframe-section">
@@ -984,8 +985,8 @@
                 </div>
 
                 <div class="button-group">
-                    <button class="btn btn-secondary">Back</button>
-                    <button class="btn btn-secondary">Export Doc</button>
+                    <button class="btn btn-secondary wireframe">Back</button>
+                    <button class="btn btn-secondary wireframe">Export Doc</button>
                 </div>
             </div>
         </div>
@@ -1054,8 +1055,8 @@
                  </div>
 
                 <div class="button-group">
-                    <button class="btn btn-secondary">Back</button>
-                    <button class="btn btn-primary">Export Full</button>
+                    <button class="btn btn-secondary wireframe">Back</button>
+                    <button class="btn btn-primary wireframe">Export Full</button>
                 </div>
             </div>
         </div>
@@ -1130,8 +1131,8 @@
                 </div>
 
                 <div class="button-group">
-                    <button class="btn btn-secondary">Back</button>
-                    <button class="btn btn-primary">Run Comparison</button>
+                    <button class="btn btn-secondary wireframe">Back</button>
+                    <button class="btn btn-primary wireframe">Run Comparison</button>
                 </div>
             </div>
         </div>
@@ -1211,8 +1212,8 @@
                 </div>
 
                 <div class="button-group">
-                    <button class="btn btn-secondary">Back</button>
-                    <button class="btn btn-primary">Open Report</button>
+                    <button class="btn btn-secondary wireframe">Back</button>
+                    <button class="btn btn-primary wireframe">Open Report</button>
                 </div>
             </div>
         </div>
@@ -1245,7 +1246,7 @@
 
         function goToSlide(index) {
             if (index < 0 || index >= slides.length) return;
-            slides[index].scrollIntoView({ behavior: 'smooth' });
+            slides[index].scrollIntoView({ behavior: 'auto' });
             updateActiveSlide(index);
         }
 
