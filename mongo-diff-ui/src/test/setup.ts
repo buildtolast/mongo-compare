@@ -3,14 +3,26 @@ import { beforeEach } from 'vitest'
 import '@testing-library/jest-dom/vitest'
 
 // Mock localStorage for tests
-const localStorageMock = {
-  getItem: () => null,
-  setItem: () => {},
-  removeItem: () => {},
-  clear: () => {},
+const createLocalStorageMock = () => {
+  const store: Record<string, string> = {}
+  return {
+    getItem: (key: string): string | null => {
+      return store.hasOwnProperty(key) ? store[key] : null
+    },
+    setItem: (key: string, value: string): void => {
+      store[key] = value
+    },
+    removeItem: (key: string): void => {
+      delete store[key]
+    },
+    clear: (): void => {
+      Object.keys(store).forEach((key) => delete store[key])
+    },
+  }
 }
+
 // @ts-expect-error - global localStorage
-global.localStorage = localStorageMock
+global.localStorage = createLocalStorageMock()
 
 // Mock console methods
 beforeEach(() => {
