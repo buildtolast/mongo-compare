@@ -71,6 +71,8 @@ The comparison recursively traverses nested objects, producing dot-notation path
 
 ## Testing
 
+### Unit Tests
+
 Run all tests:
 
 ```bash
@@ -90,6 +92,31 @@ cargo test --test created_documents_test
 cargo test --test updated_documents_test
 cargo test --test deleted_documents_test
 ```
+
+### Integration Tests with Docker
+
+Run integration tests with a Docker MongoDB container:
+
+```bash
+./scripts/test-integration.sh
+```
+
+This script:
+- Starts a fresh MongoDB 7.0 container
+- Runs integration tests against the container
+- Cleans up the container after completion
+
+**Requirements:**
+- Docker must be running
+- `mongorestore` (from MongoDB tools) must be in PATH
+
+### CI/CD
+
+Integration tests run automatically on GitHub Actions:
+- On every push to `master` or `main` branch
+- On every pull request
+
+See: `.github/workflows/ci.yml`
 
 ## Project Structure
 
