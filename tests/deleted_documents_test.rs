@@ -33,10 +33,7 @@ use mongo_compare::comparison::compare_documents;
     assert_eq!(deleted, 2, "Should identify 2 deleted documents");
     assert_eq!(sample_updated.len(), 0, "Should have no sample updated documents");
 
-    let sample_deleted_ids = vec![
-        json!(4),
-        json!(3),
-    ];
+    let sample_deleted_ids = [json!(4), json!(3)];
 
     for (i, id) in sample_deleted_ids.iter().enumerate() {
         assert!(

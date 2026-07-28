@@ -39,11 +39,7 @@
     assert_eq!(sample_created.len(), 3, "Should have 3 sample created documents");
     assert_eq!(sample_deleted.len(), 0, "Should have no sample deleted documents");
 
-    let sample_created_ids = vec![
-        json!(4),
-        json!(5),
-        json!(6),
-    ];
+    let sample_created_ids = [json!(4), json!(5), json!(6)];
 
     for (i, id) in sample_created_ids.iter().enumerate() {
         assert!(
@@ -86,12 +82,7 @@ async fn test_created_documents_various_data_types() -> Result<()> {
     assert_eq!(created, 4, "Should identify 4 created documents");
     assert_eq!(updated, 0, "Should not identify any updated documents");
 
-    let sample_created_ids = vec![
-        json!(6),
-        json!(7),
-        json!(8),
-        json!(9),
-    ];
+    let sample_created_ids = [json!(6), json!(7), json!(8), json!(9)];
 
     for (i, id) in sample_created_ids.iter().enumerate() {
         assert!(
