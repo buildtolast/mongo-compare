@@ -1,1 +1,3 @@
 export { MongoDBClient, type MongoDBClientConfig } from './mongoClient.js'
+export { SnapshotService } from './snapshotService.js'
+export { DiffEngine, DiffStrategy, type DiffEngineOptions } from './diffEngine.js'
