@@ -3,6 +3,7 @@ export interface ConnectionConfig {
   username?: string
   password?: string
   authDatabase?: string
+  database?: string
   tls?: boolean
   poolSize?: number
   connectTimeoutMS?: number

@@ -1,7 +1,7 @@
 import { createContext, useContext, useReducer } from 'react'
 import type { ConnectionConfig } from '@/types'
 
-interface ConnectionState {
+export interface ConnectionState {
   source: ConnectionConfig
   target: ConnectionConfig
   sourceConnected: boolean
@@ -9,7 +9,7 @@ interface ConnectionState {
   databases: string[]
 }
 
-type ConnectionAction =
+export type ConnectionAction =
   | { type: 'SET_SOURCE'; payload: ConnectionConfig }
   | { type: 'SET_TARGET'; payload: ConnectionConfig }
   | { type: 'SET_SOURCE_CONNECTED'; payload: boolean }
@@ -20,7 +20,11 @@ type ConnectionAction =
 const initialState: ConnectionState = {
   source: {
     connectionString: 'mongodb://localhost:27017',
+    username: '',
+    password: '',
     authDatabase: 'admin',
+    database: 'testdb',
+    tls: false,
     poolSize: 10,
     connectTimeoutMS: 30000,
     socketTimeoutMS: 30000,
@@ -28,7 +32,11 @@ const initialState: ConnectionState = {
   },
   target: {
     connectionString: 'mongodb://localhost:27018',
+    username: '',
+    password: '',
     authDatabase: 'admin',
+    database: 'testdb',
+    tls: false,
     poolSize: 10,
     connectTimeoutMS: 30000,
     socketTimeoutMS: 30000,
