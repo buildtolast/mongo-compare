@@ -1,0 +1,7 @@
+export type { ConnectionConfig } from './connection.js'
+export type { CollectionSelector } from './collection.js'
+export type { ChangedField } from './diff.js'
+export type { DocumentDiff } from './document.js'
+export type { ComparisonResult } from './comparison.js'
+export type { ExportConfig } from './export.js'
+export type { Snapshot } from './snapshot.js'
