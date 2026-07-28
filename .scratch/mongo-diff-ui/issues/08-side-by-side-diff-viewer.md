@@ -4,16 +4,33 @@
 
 **Blocked by:** 07 — Comparison Results Summary
 
-**Status:** ready-for-agent
+**Blocks:** None (MVP complete)
 
-- [ ] Create `SideBySideDiff` component with two-column layout
-- [ ] Display source document on left, target document on right
-- [ ] Highlight matching identifier field
-- [ ] Show changed fields with visual indicators
-- [ ] Implement tab switching (side-by-side/unified diff)
-- [ ] Add navigation between documents (previous/next)
-- [ ] Support expand/collapse for nested fields
-- [ ] Implement pagination for large result sets
-- [ ] Connect to diff engine results
-- [ ] Write component tests for diff viewer interactions
-- [ ] Write E2E tests for document navigation
+**Status:** ✅ Completed
+
+**Implementation summary:**
+- Created `SideBySideDiff` component with two-column layout
+- Displayed source document on left, target document on right
+- Highlighted matching identifier field
+- Showed changed fields with visual indicators
+- Implemented tab switching (side-by-side/unified diff)
+- Added navigation between documents (previous/next)
+- Supported expand/collapse for nested fields
+- Implemented pagination for large result sets
+- Connected to diff engine results
+
+**Test coverage:** 15 tests
+
+**Commit reference:** (in progress - uncommitted changes)
+
+- [x] Create `SideBySideDiff` component with two-column layout
+- [x] Display source document on left, target document on right
+- [x] Highlight matching identifier field
+- [x] Show changed fields with visual indicators
+- [x] Implement tab switching (side-by-side/unified diff)
+- [x] Add navigation between documents (previous/next)
+- [x] Support expand/collapse for nested fields
+- [x] Implement pagination for large result sets
+- [x] Connect to diff engine results
+- [x] Write component tests for diff viewer interactions
+- [x] Write E2E tests for document navigation

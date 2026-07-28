@@ -4,16 +4,33 @@
 
 **Blocked by:** 03 — Connection Configuration UI
 
-**Status:** ready-for-agent
+**Blocks:** 05 — Snapshot Management
 
-- [ ] Create `DatabaseTree` component for hierarchical database exploration
-- [ ] Create `CollectionList` component with checkboxes for collection selection
-- [ ] Implement "select all" functionality for collections
-- [ ] Add pattern matching input (regex) for collection filtering
-- [ ] Add identifier field selector with auto-detection (common patterns: `_id`, `id`, `ID`)
-- [ ] Add composite key configuration (comma-separated fields)
-- [ ] Implement "Load Snapshot" functionality to restore saved configurations
-- [ ] Add collection discovery loading states
-- [ ] Connect to `MongoDBClient` for real collection listing
-- [ ] Write component tests for discovery and selection
-- [ ] Write E2E tests for snapshot save/load workflow
+**Status:** ✅ Completed
+
+**Implementation summary:**
+- Created `DatabaseTree` component for hierarchical database exploration
+- Created `CollectionList` component with checkboxes for collection selection
+- Implemented "select all" functionality for collections
+- Added pattern matching input (regex) for collection filtering
+- Added identifier field selector with auto-detection (common patterns: `_id`, `id`, `ID`)
+- Added composite key configuration (comma-separated fields)
+- Implemented "Load Snapshot" functionality to restore saved configurations
+- Added collection discovery loading states
+- Connected to `MongoDBClient` for real collection listing
+
+**Test coverage:** 48 tests
+
+**Commit reference:** `ba2329a940a7d0eb0ff8042e72acbc5ba0dbfead`
+
+- [x] Create `DatabaseTree` component for hierarchical database exploration
+- [x] Create `CollectionList` component with checkboxes for collection selection
+- [x] Implement "select all" functionality for collections
+- [x] Add pattern matching input (regex) for collection filtering
+- [x] Add identifier field selector with auto-detection (common patterns: `_id`, `id`, `ID`)
+- [x] Add composite key configuration (comma-separated fields)
+- [x] Implement "Load Snapshot" functionality to restore saved configurations
+- [x] Add collection discovery loading states
+- [x] Connect to `MongoDBClient` for real collection listing
+- [x] Write component tests for discovery and selection
+- [x] Write E2E tests for snapshot save/load workflow
