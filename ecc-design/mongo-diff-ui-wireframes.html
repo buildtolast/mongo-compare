@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>MongoDB Diff UI - Wireframe Preview</title>
     <style>
         /* ===========================================
@@ -11,11 +11,13 @@
 
         html, body {
             height: 100%;
-            overflow-x: hidden;
+            margin: 0;
+            overflow: hidden;
         }
 
         html {
             scroll-snap-type: y mandatory;
+            scroll-snap-stop: always;
             scroll-behavior: smooth;
         }
 
@@ -25,6 +27,7 @@
             height: 100dvh;
             overflow: hidden;
             scroll-snap-align: start;
+            scroll-snap-stop: always;
             display: flex;
             flex-direction: column;
             position: relative;
@@ -214,6 +217,8 @@
             padding: 15px;
             border-radius: 4px;
             min-height: 100px;
+            max-height: 150px;
+            overflow: hidden;
             position: relative;
             border-left: 3px solid var(--accent-green);
             font-family: monospace;
@@ -691,19 +696,19 @@
                     <div class="connection-form">
                         <div class="form-group">
                             <label>Source Instance</label>
-                            <input type="text" class="form-control" value="mongodb://localhost:27017" placeholder="Connection string">
+                            <input type="text" class="form-control" value="mongodb://localhost:27017" placeholder="Connection string" readonly>
                         </div>
                         <div class="form-group">
                             <label>Target Instance</label>
-                            <input type="text" class="form-control" value="mongodb://localhost:27018" placeholder="Connection string">
+                            <input type="text" class="form-control" value="mongodb://localhost:27018" placeholder="Connection string" readonly>
                         </div>
                         <div class="form-group">
                             <label>Source DB</label>
-                            <input type="text" class="form-control" value="production" placeholder="Database name">
+                            <input type="text" class="form-control" value="production" placeholder="Database name" readonly>
                         </div>
                         <div class="form-group">
                             <label>Target DB</label>
-                            <input type="text" class="form-control" value="staging" placeholder="Database name">
+                            <input type="text" class="form-control" value="staging" placeholder="Database name" readonly>
                         </div>
                     </div>
                 </div>
@@ -713,19 +718,19 @@
                     <div class="connection-form">
                         <div class="form-group">
                             <label>Username</label>
-                            <input type="text" class="form-control" placeholder="Username">
+                            <input type="text" class="form-control" placeholder="Username" readonly>
                         </div>
                         <div class="form-group">
                             <label>Password</label>
-                            <input type="password" class="form-control" placeholder="••••••••">
+                            <input type="password" class="form-control" placeholder="••••••••" readonly>
                         </div>
                         <div class="form-group">
                             <label>Auth DB</label>
-                            <input type="text" class="form-control" value="admin" placeholder="Authentication database">
+                            <input type="text" class="form-control" value="admin" placeholder="Authentication database" readonly>
                         </div>
                         <div class="form-group">
                             <label>TLS/SSL</label>
-                            <input type="checkbox" class="form-control" checked style="transform: scale(1.5);">
+                            <input type="checkbox" class="form-control" checked disabled style="transform: scale(1.5);">
                         </div>
                     </div>
                 </div>
@@ -735,19 +740,19 @@
                     <div class="connection-form">
                         <div class="form-group">
                             <label>Pool Size</label>
-                            <input type="number" class="form-control" value="10" min="1" max="100">
+                            <input type="number" class="form-control" value="10" min="1" max="100" readonly>
                         </div>
                         <div class="form-group">
                             <label>Connect Timeout</label>
-                            <input type="number" class="form-control" value="30000" placeholder="ms">
+                            <input type="number" class="form-control" value="30000" placeholder="ms" readonly>
                         </div>
                         <div class="form-group">
                             <label>Socket Timeout</label>
-                            <input type="number" class="form-control" value="30000" placeholder="ms">
+                            <input type="number" class="form-control" value="30000" placeholder="ms" readonly>
                         </div>
                         <div class="form-group">
                             <label>Server Selection</label>
-                            <input type="number" class="form-control" value="30000" placeholder="ms">
+                            <input type="number" class="form-control" value="30000" placeholder="ms" readonly>
                         </div>
                     </div>
                 </div>
@@ -781,17 +786,17 @@
                 <div class="wireframe-section">
                     <div class="wireframe-label">Collection Explorer</div>
                     <div class="wireframe-content" style="min-height: 150px;">
-                        <input type="text" placeholder="Search collections..." style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-color); color: var(--text-primary); font-family: monospace;">
+                        <input type="text" placeholder="Search collections..." value="Search collections..." style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-color); color: var(--text-secondary); font-family: monospace;" readonly>
                         <div style="margin-bottom: 10px;">
                             <strong style="color: var(--accent-blue);">Source Instance</strong>
                             <div style="margin-left: 10px; margin-top: 5px; font-size: 0.9rem;">
                                 <div style="padding: 5px; background: var(--border-color); border-radius: 4px; margin-bottom: 5px;">production</div>
                                 <ul style="list-style: none; padding-left: 0; margin: 5px 0;">
-                                    <li style="padding: 5px;"><label><input type="checkbox" checked> users</label></li>
-                                    <li style="padding: 5px;"><label><input type="checkbox" checked> orders</label></li>
-                                    <li style="padding: 5px;"><label><input type="checkbox"> products</label></li>
-                                    <li style="padding: 5px;"><label><input type="checkbox"> inventory</label></li>
-                                    <li style="padding: 5px;"><label><input type="checkbox"> analytics</label></li>
+                                    <li style="padding: 5px;"><label><input type="checkbox" checked disabled> users</label></li>
+                                    <li style="padding: 5px;"><label><input type="checkbox" checked disabled> orders</label></li>
+                                    <li style="padding: 5px;"><label><input type="checkbox" disabled> products</label></li>
+                                    <li style="padding: 5px;"><label><input type="checkbox" disabled> inventory</label></li>
+                                    <li style="padding: 5px;"><label><input type="checkbox" disabled> analytics</label></li>
                                 </ul>
                             </div>
                         </div>
@@ -800,11 +805,11 @@
                             <div style="margin-left: 10px; margin-top: 5px; font-size: 0.9rem;">
                                 <div style="padding: 5px; background: var(--border-color); border-radius: 4px; margin-bottom: 5px;">staging</div>
                                 <ul style="list-style: none; padding-left: 0; margin: 5px 0;">
-                                    <li style="padding: 5px;"><label><input type="checkbox" checked> users</label></li>
-                                    <li style="padding: 5px;"><label><input type="checkbox" checked> orders</label></li>
-                                    <li style="padding: 5px;"><label><input type="checkbox"> products</label></li>
-                                    <li style="padding: 5px;"><label><input type="checkbox" checked> inventory</label></li>
-                                    <li style="padding: 5px;"><label><input type="checkbox"> analytics</label></li>
+                                    <li style="padding: 5px;"><label><input type="checkbox" checked disabled> users</label></li>
+                                    <li style="padding: 5px;"><label><input type="checkbox" checked disabled> orders</label></li>
+                                    <li style="padding: 5px;"><label><input type="checkbox" disabled> products</label></li>
+                                    <li style="padding: 5px;"><label><input type="checkbox" checked disabled> inventory</label></li>
+                                    <li style="padding: 5px;"><label><input type="checkbox" disabled> analytics</label></li>
                                 </ul>
                             </div>
                         </div>
@@ -816,16 +821,16 @@
                     <div class="wireframe-content" style="min-height: 100px;">
                         <div style="margin-bottom: 10px;">
                             <label style="color: var(--accent-blue);">Collection Pattern (regex)</label>
-                            <input type="text" class="form-control" value="^(users|orders|products)$" placeholder="Regex pattern">
+                            <input type="text" class="form-control" value="^(users|orders|products)$" placeholder="Regex pattern" readonly>
                         </div>
                         <div style="margin-bottom: 10px;">
                             <label style="color: var(--accent-blue);">Identifier Field</label>
-                            <input type="text" class="form-control" value="id" placeholder="Field name">
+                            <input type="text" class="form-control" value="id" placeholder="Field name" readonly>
                             <small style="color: var(--text-secondary);">Auto-detected: id (can override)</small>
                         </div>
                         <div>
                             <label style="color: var(--accent-blue);">Composite Key Fields (comma-separated)</label>
-                            <input type="text" class="form-control" placeholder="field1,field2,field3">
+                            <input type="text" class="form-control" placeholder="field1,field2,field3" readonly>
                         </div>
                     </div>
                 </div>
@@ -939,29 +944,29 @@
                 <div class="wireframe-section">
                     <div class="wireframe-label">Document Comparison: users collection, id=12345</div>
 
-                    <div class="diff-view">
+                    <div class="diff-view" style="max-height: 300px;">
                         <div>
                             <div style="margin-bottom: 10px; font-weight: 600; color: var(--accent-blue);">Source Instance</div>
-                            <div class="diff-column">
-                                <div class="diff-line">{
-<div class="diff-line">  <span style="color: var(--accent-green);">"id"</span>: <span style="color: #3fb950;">"12345"</span>,</div>
-<div class="diff-line">  <span style="color: var(--accent-green);">"name"</span>: <span style="color: #3fb950;">"John Doe"</span>,</div>
-<div class="diff-line">  <span style="color: var(--accent-green);">"email"</span>: <span style="color: #3fb950;">"john@example.com"</span>,</div>
-<div class="diff-line">  <span style="color: var(--accent-green);">"status"</span>: <span style="color: #3fb950;">"active"</span>,</div>
-<div class="diff-line">  <span style="color: var(--accent-green);">"created_at"</span>: <span style="color: #3fb950;">"2024-01-15"</span></div>
-<div class="diff-line">}</div>
+                            <div class="diff-column" style="overflow: hidden;">
+                                <div class="diff-line">{</div>
+                                <div class="diff-line">  <span style="color: var(--accent-green);">"id"</span>: <span style="color: #3fb950;">"12345"</span>,</div>
+                                <div class="diff-line">  <span style="color: var(--accent-green);">"name"</span>: <span style="color: #3fb950;">"John Doe"</span>,</div>
+                                <div class="diff-line">  <span style="color: var(--accent-green);">"email"</span>: <span style="color: #3fb950;">"john@example.com"</span>,</div>
+                                <div class="diff-line">  <span style="color: var(--accent-green);">"status"</span>: <span style="color: #3fb950;">"active"</span>,</div>
+                                <div class="diff-line">  <span style="color: var(--accent-green);">"created_at"</span>: <span style="color: #3fb950;">"2024-01-15"</span></div>
+                                <div class="diff-line">}</div>
                             </div>
                         </div>
                         <div>
                             <div style="margin-bottom: 10px; font-weight: 600; color: var(--accent-blue);">Target Instance</div>
-                            <div class="diff-column">
-                                <div class="diff-line">{
-<div class="diff-line">  <span style="color: var(--accent-green);">"id"</span>: <span style="color: #3fb950;">"12345"</span>,</div>
-<div class="diff-line">  <span class="diff-change">"name"</span>: <span class="diff-change">"John Smith"</span>  <span style="color: var(--text-secondary);">// changed</span>,</div>
-<div class="diff-line">  <span class="diff-change">"email"</span>: <span class="diff-change">"john.smith@example.com"</span>  <span style="color: var(--text-secondary);">// changed</span>,</div>
-<div class="diff-line">  <span style="color: var(--accent-green);">"status"</span>: <span style="color: #3fb950;">"active"</span>,</div>
-<div class="diff-line">  <span class="diff-add">"updated_at"</span>: <span class="diff-add">"2024-06-20"</span>  <span style="color: var(--text-secondary);">// added</span></div>
-<div class="diff-line">}</div>
+                            <div class="diff-column" style="overflow: hidden;">
+                                <div class="diff-line">{</div>
+                                <div class="diff-line">  <span style="color: var(--accent-green);">"id"</span>: <span style="color: #3fb950;">"12345"</span>,</div>
+                                <div class="diff-line">  <span class="diff-change">"name"</span>: <span class="diff-change">"John Smith"</span>  <span style="color: var(--text-secondary);">// changed</span>,</div>
+                                <div class="diff-line">  <span class="diff-change">"email"</span>: <span class="diff-change">"john.smith@example.com"</span>  <span style="color: var(--text-secondary);">// changed</span>,</div>
+                                <div class="diff-line">  <span style="color: var(--accent-green);">"status"</span>: <span style="color: #3fb950;">"active"</span>,</div>
+                                <div class="diff-line">  <span class="diff-add">"updated_at"</span>: <span class="diff-add">"2024-06-20"</span>  <span style="color: var(--text-secondary);">// added</span></div>
+                                <div class="diff-line">}</div>
                             </div>
                         </div>
                     </div>
@@ -1003,50 +1008,50 @@
             <p style="color: var(--text-secondary);">Inline color-coded change indicators showing exactly what changed.</p>
 
             <div class="wireframe-container" style="margin-top: 3rem;">
-                <div class="wireframe-section">
+               <div class="wireframe-section">
                     <div class="wireframe-label">Color-Coded Diff Output</div>
-                    <div class="wireframe-content" style="min-height: 300px; font-family: monospace; font-size: 0.9rem;">
-<pre>
-{
-  <span style="color: var(--accent-green);">"id"</span>: <span style="color: #3fb950;">"12345"</span>,
-  <span class="diff-change">"name"</span>: <span class="diff-change">"John Smith"</span>  <span style="color: var(--text-secondary);">/* changed from "John Doe" */</span>,
-  <span class="diff-change">"email"</span>: <span class="diff-change">"john.smith@example.com"</span>  <span style="color: var(--text-secondary);">/* changed from "john@example.com" */</span>,
-  <span style="color: var(--accent-green);">"status"</span>: <span style="color: #3fb950;">"active"</span>,
-  <span style="color: var(--accent-green);">"created_at"</span>: <span style="color: #3fb950;">"2024-01-15"</span>,
-  <span class="diff-add">"updated_at"</span>: <span class="diff-add">"2024-06-20"</span>  <span style="color: var(--text-secondary);">/* + added field */</span>,
-  <span class="diff-remove">"old_field"</span>: <span class="diff-remove">"value"</span>  <span style="color: var(--text-secondary);">/* - removed field */</span>
-}
-</pre>
-                    </div>
-                </div>
+                    <div class="wireframe-content" style="max-height: 150px;">
+ <pre style="margin: 0; font-size: 0.85rem; white-space: pre-wrap; overflow: hidden;">
+ {
+   <span style="color: var(--accent-green);">"id"</span>: <span style="color: #3fb950;">"12345"</span>,
+   <span class="diff-change">"name"</span>: <span class="diff-change">"John Smith"</span>  <span style="color: var(--text-secondary);">/* changed from "John Doe" */</span>,
+   <span class="diff-change">"email"</span>: <span class="diff-change">"john.smith@example.com"</span>  <span style="color: var(--text-secondary);">/* changed from "john@example.com" */</span>,
+   <span style="color: var(--accent-green);">"status"</span>: <span style="color: #3fb950;">"active"</span>,
+   <span style="color: var(--accent-green);">"created_at"</span>: <span style="color: #3fb950;">"2024-01-15"</span>,
+   <span class="diff-add">"updated_at"</span>: <span class="diff-add">"2024-06-20"</span>  <span style="color: var(--text-secondary);">/* + added field */</span>,
+   <span class="diff-remove">"old_field"</span>: <span class="diff-remove">"value"</span>  <span style="color: var(--text-secondary);">/* - removed field */</span>
+ }
+ </pre>
+                     </div>
+                 </div>
 
-                <div class="wireframe-section">
-                    <div class="wireframe-label">Legend</div>
-                    <div class="legend">
-                        <div class="legend-item">
-                            <span class="color-indicator" style="background: var(--accent-green);"></span> Added field
-                        </div>
-                        <div class="legend-item">
-                            <span class="color-indicator" style="background: var(--accent-red);"></span> Removed field
-                        </div>
-                        <div class="legend-item">
-                            <span class="color-indicator" style="background: var(--accent-yellow);"></span> Changed field
-                        </div>
-                    </div>
-                </div>
+                 <div class="wireframe-section">
+                     <div class="wireframe-label">Legend</div>
+                     <div class="legend">
+                         <div class="legend-item">
+                             <span class="color-indicator" style="background: var(--accent-green);"></span> Added field
+                         </div>
+                         <div class="legend-item">
+                             <span class="color-indicator" style="background: var(--accent-red);"></span> Removed field
+                         </div>
+                         <div class="legend-item">
+                             <span class="color-indicator" style="background: var(--accent-yellow);"></span> Changed field
+                         </div>
+                     </div>
+                 </div>
 
-                <div class="wireframe-section">
-                    <div class="wireframe-label">Nested Changes</div>
-                    <div class="wireframe-content" style="min-height: 100px; font-family: monospace; font-size: 0.85rem;">
-<pre>
-<span class="diff-change">"address"</span>: {
-  <span class="diff-change"><span style="color: var(--accent-green);">"city"</span></span>: <span class="diff-change"><span style="color: #3fb950;">"New York"</span></span>  <span style="color: var(--text-secondary);">/* changed from "Boston" */</span>,
-  <span class="diff-add"><span style="color: var(--accent-green);">"zip"</span></span>: <span class="diff-add"><span style="color: #3fb950;">"10001"</span></span>  <span style="color: var(--text-secondary);">/* + added */</span>,
-  <span class="diff-remove"><span style="color: var(--accent-green);">"suite"</span></span>: <span class="diff-remove"><span style="color: #3fb950;">"100"</span></span>  <span style="color: var(--text-secondary);">/* - removed */</span>
-}
-</pre>
-                    </div>
-                </div>
+                 <div class="wireframe-section">
+                     <div class="wireframe-label">Nested Changes</div>
+                     <div class="wireframe-content" style="max-height: 100px;">
+ <pre style="margin: 0; font-size: 0.8rem; white-space: pre-wrap; overflow: hidden;">
+ <span class="diff-change">"address"</span>: {
+   <span class="diff-change"><span style="color: var(--accent-green);">"city"</span></span>: <span class="diff-change"><span style="color: #3fb950;">"New York"</span></span>  <span style="color: var(--text-secondary);">/* changed from "Boston" */</span>,
+   <span class="diff-add"><span style="color: var(--accent-green);">"zip"</span></span>: <span class="diff-add"><span style="color: #3fb950;">"10001"</span></span>  <span style="color: var(--text-secondary);">/* + added */</span>,
+   <span class="diff-remove"><span style="color: var(--accent-green);">"suite"</span></span>: <span class="diff-remove"><span style="color: #3fb950;">"100"</span></span>  <span style="color: var(--text-secondary);">/* - removed */</span>
+ }
+ </pre>
+                     </div>
+                 </div>
 
                 <div class="button-group">
                     <button class="btn btn-secondary">Back</button>
@@ -1075,15 +1080,15 @@
             <div class="wireframe-container" style="margin-top: 3rem;">
                 <div class="wireframe-section">
                     <div class="wireframe-label">Saved Snapshots</div>
-                    <div class="snapshot-list">
+                    <div class="snapshot-list" style="max-height: 120px; overflow: hidden;">
                         <div class="snapshot-item">
                             <div>
                                 <strong style="color: var(--accent-blue);">production → staging (users, orders)</strong>
                                 <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px;">Saved: 2024-06-15 14:30:00</div>
                             </div>
                             <div style="display: flex; gap: 8px;">
-                                <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;">Load</button>
-                                <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem; background: rgba(248, 81, 73, 0.2); color: var(--accent-red);">Delete</button>
+                                <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;" disabled>Load</button>
+                                <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem; background: rgba(248, 81, 73, 0.2); color: var(--accent-red);" disabled>Delete</button>
                             </div>
                         </div>
                         <div class="snapshot-item">
@@ -1092,8 +1097,8 @@
                                 <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px;">Saved: 2024-06-10 09:15:00</div>
                             </div>
                             <div style="display: flex; gap: 8px;">
-                                <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;">Load</button>
-                                <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem; background: rgba(248, 81, 73, 0.2); color: var(--accent-red);">Delete</button>
+                                <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;" disabled>Load</button>
+                                <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem; background: rgba(248, 81, 73, 0.2); color: var(--accent-red);" disabled>Delete</button>
                             </div>
                         </div>
                         <div class="snapshot-item">
@@ -1102,8 +1107,8 @@
                                 <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px;">Saved: 2024-06-05 11:45:00</div>
                             </div>
                             <div style="display: flex; gap: 8px;">
-                                <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;">Load</button>
-                                <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem; background: rgba(248, 81, 73, 0.2); color: var(--accent-red);">Delete</button>
+                                <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;" disabled>Load</button>
+                                <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem; background: rgba(248, 81, 73, 0.2); color: var(--accent-red);" disabled>Delete</button>
                             </div>
                         </div>
                     </div>
@@ -1111,16 +1116,16 @@
 
                 <div class="wireframe-section">
                     <div class="wireframe-label">Save Current Configuration</div>
-                    <div class="wireframe-content" style="min-height: 80px;">
+                    <div class="wireframe-content" style="max-height: 80px;">
                         <div style="margin-bottom: 10px;">
                             <label style="color: var(--accent-blue);">Snapshot Name</label>
-                            <input type="text" class="form-control" placeholder="e.g., daily-sync-check">
+                            <input type="text" class="form-control" placeholder="e.g., daily-sync-check" readonly>
                         </div>
                         <div style="margin-bottom: 10px;">
                             <label style="color: var(--accent-blue);">Description (optional)</label>
-                            <textarea class="form-control" rows="2" placeholder="What this snapshot is for..."></textarea>
+                            <textarea class="form-control" rows="2" placeholder="What this snapshot is for..." readonly></textarea>
                         </div>
-                        <button class="btn btn-primary" style="width: 100%;">Save Snapshot</button>
+                        <button class="btn btn-primary" style="width: 100%;" disabled>Save Snapshot</button>
                     </div>
                 </div>
 
@@ -1224,41 +1229,69 @@
     </section>
 
     <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+
+        function updateActiveSlide(index) {
+            currentSlide = index;
+            slides.forEach((slide, i) => {
+                slide.classList.toggle('active', i === index);
+                const navDots = slide.querySelectorAll('.nav-dot');
+                navDots.forEach((dot, j) => {
+                    dot.classList.toggle('active', j === index);
+                });
+            });
+        }
+
+        function goToSlide(index) {
+            if (index < 0 || index >= slides.length) return;
+            slides[index].scrollIntoView({ behavior: 'smooth' });
+            updateActiveSlide(index);
+        }
+
         // Keyboard navigation
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'ArrowDown') {
-                const current = document.querySelector('.slide.active') || document.querySelector('.slide');
-                const next = current.nextElementSibling;
-                if (next && next.classList.contains('slide')) {
-                    next.scrollIntoView({ behavior: 'smooth' });
-                }
-            } else if (e.key === 'ArrowUp') {
-                const current = document.querySelector('.slide.active') || document.querySelector('.slide');
-                const prev = current.previousElementSibling;
-                if (prev && prev.classList.contains('slide')) {
-                    prev.scrollIntoView({ behavior: 'smooth' });
-                }
+            if (e.key === 'ArrowDown' || e.key === 'PageDown') {
+                e.preventDefault();
+                goToSlide(Math.min(currentSlide + 1, slides.length - 1));
+            } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+                e.preventDefault();
+                goToSlide(Math.max(currentSlide - 1, 0));
+            } else if (e.key === 'Home') {
+                e.preventDefault();
+                goToSlide(0);
+            } else if (e.key === 'End') {
+                e.preventDefault();
+                goToSlide(slides.length - 1);
             }
         });
 
-        // Mouse wheel navigation
+        // Mouse wheel navigation with debounce
+        let isScrolling = false;
         document.addEventListener('wheel', function(e) {
+            if (isScrolling) return;
+            
             if (e.deltaY > 0) {
-                const current = document.querySelector('.slide.active') || document.querySelector('.slide');
-                const next = current.nextElementSibling;
-                if (next && next.classList.contains('slide')) {
-                    e.preventDefault();
-                    next.scrollIntoView({ behavior: 'smooth' });
+                e.preventDefault();
+                const next = currentSlide + 1;
+                if (next < slides.length) {
+                    isScrolling = true;
+                    goToSlide(next);
+                    setTimeout(() => { isScrolling = false; }, 500);
                 }
             } else if (e.deltaY < 0) {
-                const current = document.querySelector('.slide.active') || document.querySelector('.slide');
-                const prev = current.previousElementSibling;
-                if (prev && prev.classList.contains('slide')) {
-                    e.preventDefault();
-                    prev.scrollIntoView({ behavior: 'smooth' });
+                e.preventDefault();
+                const prev = currentSlide - 1;
+                if (prev >= 0) {
+                    isScrolling = true;
+                    goToSlide(prev);
+                    setTimeout(() => { isScrolling = false; }, 500);
                 }
             }
-        });
+        }, { passive: false });
+
+        // Initialize first slide as active
+        updateActiveSlide(0);
     </script>
 </body>
 </html>
