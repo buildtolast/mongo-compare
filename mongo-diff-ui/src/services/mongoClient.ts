@@ -29,7 +29,7 @@ export class MongoDBClient {
       maxPoolSize: config.poolSize ?? 10,
       serverSelectionTimeoutMS: config.serverSelectionTimeoutMS ?? 30000,
       socketTimeoutMS: config.socketTimeoutMS ?? 30000,
-    }
+    } as Record<string, unknown>
 
     if (config.username && config.password) {
       options.auth = {
@@ -42,6 +42,7 @@ export class MongoDBClient {
     }
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const client = new MongoClient(connectionString, options as any)
       await client.connect()
       const db = client.db()

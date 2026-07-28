@@ -9,13 +9,12 @@ export interface CheckboxProps {
 }
 
 export function Checkbox({
-  label,
-  checked,
-  onChange,
-  id,
-  className = '',
-  ...props
-}: CheckboxProps) {
+   label,
+   checked,
+   onChange,
+   id,
+   className = '',
+ }: CheckboxProps) {
   return (
     <div className="flex items-center space-x-3">
       <div className="relative flex items-center">

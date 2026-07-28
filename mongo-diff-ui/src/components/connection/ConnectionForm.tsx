@@ -29,7 +29,7 @@ function isValidConnectionString(value: string): boolean {
   return uriPattern.test(value.trim())
 }
 
-function isValidDatabaseName(value: string): boolean {
+function _isValidDatabaseName(value: string): boolean {
   return value.trim().length > 0 && value.trim().length <= 64
 }
 

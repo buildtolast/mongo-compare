@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { MongoDBClient, MongoDBClientConfig } from './mongoClient'
+import { MongoDBClient } from './mongoClient'
 
 describe('MongoDBClient', () => {
   let client: MongoDBClient
