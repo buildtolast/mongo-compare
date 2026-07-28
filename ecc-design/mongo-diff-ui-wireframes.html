@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MongoDB Diff UI - Wireframe Preview</title>
+    <style>
+        /* ===========================================
+           VIEWPORT FITTING: MANDATORY BASE STYLES
+           =========================================== */
+
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        html {
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
+
+        .slide {
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            scroll-snap-align: start;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .slide-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            max-height: 100%;
+            overflow: hidden;
+            padding: var(--slide-padding);
+        }
+
+        :root {
+            --title-size: clamp(1.5rem, 5vw, 4rem);
+            --h2-size: clamp(1.25rem, 3.5vw, 2.5rem);
+            --h3-size: clamp(1rem, 2.5vw, 1.75rem);
+            --body-size: clamp(0.75rem, 1.5vw, 1.125rem);
+            --small-size: clamp(0.65rem, 1vw, 0.875rem);
+
+            --slide-padding: clamp(1rem, 4vw, 4rem);
+            --content-gap: clamp(0.5rem, 2vw, 2rem);
+            --element-gap: clamp(0.25rem, 1vw, 1rem);
+
+            /* Terminal Green Palette */
+            --bg-color: #0d1117;
+            --panel-bg: #161b22;
+            --text-primary: #c9d1d9;
+            --text-secondary: #8b949e;
+            --accent-green: #2ea043;
+            --accent-blue: #58a6ff;
+            --accent-yellow: #d29922;
+            --accent-red: #f85149;
+            --border-color: #30363d;
+            --code-bg: #0d1117;
+        }
+
+        .card, .container, .content-box {
+            max-width: min(90vw, 1000px);
+            max-height: min(80vh, 700px);
+        }
+
+        .feature-list, .bullet-list {
+            gap: clamp(0.4rem, 1vh, 1rem);
+        }
+
+        .feature-list li, .bullet-list li {
+            font-size: var(--body-size);
+            line-height: 1.4;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+            gap: clamp(0.5rem, 1.5vw, 1rem);
+        }
+
+        img, .image-container {
+            max-width: 100%;
+            max-height: min(50vh, 400px);
+            object-fit: contain;
+        }
+
+        @media (max-height: 700px) {
+            :root {
+                --slide-padding: clamp(0.75rem, 3vw, 2rem);
+                --content-gap: clamp(0.4rem, 1.5vw, 1rem);
+                --title-size: clamp(1.25rem, 4.5vw, 2.5rem);
+                --h2-size: clamp(1rem, 3vw, 1.75rem);
+            }
+        }
+
+        @media (max-height: 600px) {
+            :root {
+                --slide-padding: clamp(0.5rem, 2.5vw, 1.5rem);
+                --content-gap: clamp(0.3rem, 1vw, 0.75rem);
+                --title-size: clamp(1.1rem, 4vw, 2rem);
+                --body-size: clamp(0.7rem, 1.2vw, 0.95rem);
+            }
+
+            .nav-dots, .keyboard-hint, .decorative {
+                display: none;
+            }
+        }
+
+        @media (max-height: 500px) {
+            :root {
+                --slide-padding: clamp(0.4rem, 2vw, 1rem);
+                --title-size: clamp(1rem, 3.5vw, 1.5rem);
+                --h2-size: clamp(0.9rem, 2.5vw, 1.25rem);
+                --body-size: clamp(0.65rem, 1vw, 0.85rem);
+            }
+        }
+
+        @media (max-width: 600px) {
+            :root {
+                --title-size: clamp(1.25rem, 7vw, 2.5rem);
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.2s !important;
+            }
+
+            html {
+                scroll-behavior: auto;
+            }
+        }
+
+        /* Terminal Green Specific Styles */
+        body {
+            background: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', monospace;
+            line-height: 1.6;
+        }
+
+        /* Scan line effect */
+        body::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+            background-size: 100% 4px;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Slide transitions */
+        .slide {
+            animation: slideIn 0.4s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Wireframe UI components */
+        .wireframe-container {
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--panel-bg);
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .wireframe-section {
+            margin: 15px 0;
+            padding: 15px;
+            background: var(--bg-color);
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        .wireframe-label {
+            font-weight: bold;
+            color: var(--accent-blue);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .wireframe-content {
+            background: var(--code-bg);
+            padding: 15px;
+            border-radius: 4px;
+            min-height: 100px;
+            position: relative;
+            border-left: 3px solid var(--accent-green);
+            font-family: monospace;
+            font-size: 0.85rem;
+        }
+
+        .wireframe-content::before {
+            content: "Wireframe Area";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--text-secondary);
+            font-size: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Form elements */
+        .connection-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+            color: var(--text-secondary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.2);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-family: inherit;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: var(--accent-green);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #3fb950;
+        }
+
+        .btn-secondary {
+            background: var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: #484f58;
+        }
+
+        .btn-success {
+            background: var(--accent-green);
+            color: white;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px 4px 0 0;
+            cursor: pointer;
+            background: var(--panel-bg);
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+        }
+
+        .tab.active {
+            background: var(--code-bg);
+            border-bottom: 2px solid var(--code-bg);
+            color: var(--text-primary);
+        }
+
+        .tab:hover:not(.active) {
+            background: var(--border-color);
+        }
+
+        /* Diff view */
+        .diff-view {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .diff-column {
+            background: var(--bg-color);
+            padding: 10px;
+            border-radius: 4px;
+            height: 200px;
+            overflow: auto;
+            border: 1px solid var(--border-color);
+            font-family: monospace;
+            font-size: 0.8rem;
+        }
+
+        .diff-line {
+            padding: 2px 5px;
+            display: block;
+        }
+
+        .diff-add {
+            background: rgba(46, 160, 67, 0.2);
+            color: var(--accent-green);
+        }
+
+        .diff-remove {
+            background: rgba(248, 81, 73, 0.2);
+            color: var(--accent-red);
+        }
+
+        .diff-change {
+            background: rgba(210, 153, 34, 0.2);
+            color: var(--accent-yellow);
+        }
+
+        /* Stats grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--text-secondary);
+        }
+
+        .stat-card.created {
+            background: rgba(46, 160, 67, 0.1);
+            border-color: var(--accent-green);
+        }
+
+        .stat-card.updated {
+            background: rgba(210, 153, 34, 0.1);
+            border-color: var(--accent-yellow);
+        }
+
+        .stat-card.deleted {
+            background: rgba(248, 81, 73, 0.1);
+            border-color: var(--accent-red);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Export options */
+        .export-options {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .export-btn {
+            padding: 15px 25px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            font-weight: 600;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+
+        .export-btn:hover {
+            border-color: var(--accent-blue);
+            background: var(--panel-bg);
+        }
+
+        /* Monitoring controls */
+        .monitoring-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .toggle {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--border-color);
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--accent-green);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        /* Snapshot list */
+        .snapshot-list {
+            margin-top: 20px;
+        }
+
+        .snapshot-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            margin-bottom: 8px;
+            background: var(--panel-bg);
+            transition: all 0.2s ease;
+        }
+
+        .snapshot-item:hover {
+            border-color: var(--text-secondary);
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+
+        .color-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            margin-right: 5px;
+        }
+
+        /* Progress bar */
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: var(--border-color);
+            border-radius: 2px;
+            margin-top: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-green);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* Terminal window styling */
+        .terminal-window {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .terminal-header {
+            background: var(--panel-bg);
+            padding: 8px 15px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 6px;
+        }
+
+        .terminal-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .dot-red { background: #ff5f56; }
+        .dot-yellow { background: #ffbd2e; }
+        .dot-green { background: #27c93f; }
+
+        .terminal-body {
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+        }
+
+        .terminal-line {
+            margin: 5px 0;
+        }
+
+        .terminal-prompt {
+            color: var(--accent-green);
+        }
+
+        .terminal-path {
+            color: var(--accent-blue);
+        }
+
+        .terminal-error {
+            color: var(--accent-red);
+        }
+
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-blue { background: rgba(88, 166, 255, 0.2); color: var(--accent-blue); }
+        .badge-green { background: rgba(46, 160, 67, 0.2); color: var(--accent-green); }
+        .badge-yellow { background: rgba(210, 153, 34, 0.2); color: var(--accent-yellow); }
+        .badge-red { background: rgba(248, 81, 73, 0.2); color: var(--accent-red); }
+
+        /* Grid cards */
+        .grid-card {
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--panel-bg);
+            transition: all 0.2s ease;
+        }
+
+        .grid-card:hover {
+            border-color: var(--text-secondary);
+            transform: translateY(-2px);
+        }
+
+        .grid-card h3 {
+            margin: 0 0 10px 0;
+            color: var(--accent-blue);
+            font-size: 1rem;
+        }
+
+        .grid-card p {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Slide 1: Title -->
+    <section class="slide">
+        <div class="slide-content">
+            <div style="text-align: center;">
+                <h1 style="font-size: clamp(2rem, 6vw, 5rem); margin: 0; font-weight: 700;">
+                    MongoDB Diff UI
+                </h1>
+                <p style="font-size: clamp(0.75rem, 2vw, 1.5rem); color: var(--text-secondary); margin-top: 1rem;">
+                    Live Instance Comparison Interface
+                </p>
+                <div style="margin-top: 3rem; font-size: 0.9rem; color: var(--text-secondary);">
+                    <span class="badge badge-green">Interactive Wireframe Preview</span>
+                </div>
+            </div>
+        </div>
+        <div class="nav-dots" style="display: flex; gap: 8px; justify-content: center; padding: 20px;">
+            <div class="nav-dot active" style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent-green);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+        </div>
+        <div class="keyboard-hint" style="text-align: center; color: var(--text-secondary); font-size: 0.9rem; margin-top: auto; padding: 10px;">
+            Use arrow keys or scroll to navigate
+        </div>
+    </section>
+
+    <!-- Slide 2: Connection Configuration -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2 style="margin-bottom: 1rem;">Connection Configuration</h2>
+            <p style="color: var(--text-secondary);">Setup source and target MongoDB instances with full authentication and connection options.</p>
+
+            <div class="wireframe-container" style="margin-top: 3rem;">
+                <div class="wireframe-label">Connection Settings</div>
+                <div class="wireframe-section">
+                    <div class="connection-form">
+                        <div class="form-group">
+                            <label>Source Instance</label>
+                            <input type="text" class="form-control" value="mongodb://localhost:27017" placeholder="Connection string">
+                        </div>
+                        <div class="form-group">
+                            <label>Target Instance</label>
+                            <input type="text" class="form-control" value="mongodb://localhost:27018" placeholder="Connection string">
+                        </div>
+                        <div class="form-group">
+                            <label>Source DB</label>
+                            <input type="text" class="form-control" value="production" placeholder="Database name">
+                        </div>
+                        <div class="form-group">
+                            <label>Target DB</label>
+                            <input type="text" class="form-control" value="staging" placeholder="Database name">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wireframe-section">
+                    <div class="wireframe-label">Authentication & Security</div>
+                    <div class="connection-form">
+                        <div class="form-group">
+                            <label>Username</label>
+                            <input type="text" class="form-control" placeholder="Username">
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input type="password" class="form-control" placeholder="••••••••">
+                        </div>
+                        <div class="form-group">
+                            <label>Auth DB</label>
+                            <input type="text" class="form-control" value="admin" placeholder="Authentication database">
+                        </div>
+                        <div class="form-group">
+                            <label>TLS/SSL</label>
+                            <input type="checkbox" class="form-control" checked style="transform: scale(1.5);">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wireframe-section">
+                    <div class="wireframe-label">Connection Pool Settings</div>
+                    <div class="connection-form">
+                        <div class="form-group">
+                            <label>Pool Size</label>
+                            <input type="number" class="form-control" value="10" min="1" max="100">
+                        </div>
+                        <div class="form-group">
+                            <label>Connect Timeout</label>
+                            <input type="number" class="form-control" value="30000" placeholder="ms">
+                        </div>
+                        <div class="form-group">
+                            <label>Socket Timeout</label>
+                            <input type="number" class="form-control" value="30000" placeholder="ms">
+                        </div>
+                        <div class="form-group">
+                            <label>Server Selection</label>
+                            <input type="number" class="form-control" value="30000" placeholder="ms">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-secondary">Test Connection</button>
+                    <button class="btn btn-secondary">Save as Snapshot</button>
+                    <button class="btn btn-primary">Next: Collections</button>
+                </div>
+            </div>
+        </div>
+        <div class="nav-dots" style="display: flex; gap: 8px; justify-content: center; padding: 20px;">
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot active" style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent-green);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+        </div>
+    </section>
+
+    <!-- Slide 3: Collection Selection -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2 style="margin-bottom: 1rem;">Collection Selection</h2>
+            <p style="color: var(--text-secondary);">Browse available databases and collections, with search/filter and pattern matching support.</p>
+
+            <div class="wireframe-container" style="margin-top: 3rem;">
+                <div class="wireframe-section">
+                    <div class="wireframe-label">Collection Explorer</div>
+                    <div class="wireframe-content" style="min-height: 150px;">
+                        <input type="text" placeholder="Search collections..." style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-color); color: var(--text-primary); font-family: monospace;">
+                        <div style="margin-bottom: 10px;">
+                            <strong style="color: var(--accent-blue);">Source Instance</strong>
+                            <div style="margin-left: 10px; margin-top: 5px; font-size: 0.9rem;">
+                                <div style="padding: 5px; background: var(--border-color); border-radius: 4px; margin-bottom: 5px;">production</div>
+                                <ul style="list-style: none; padding-left: 0; margin: 5px 0;">
+                                    <li style="padding: 5px;"><label><input type="checkbox" checked> users</label></li>
+                                    <li style="padding: 5px;"><label><input type="checkbox" checked> orders</label></li>
+                                    <li style="padding: 5px;"><label><input type="checkbox"> products</label></li>
+                                    <li style="padding: 5px;"><label><input type="checkbox"> inventory</label></li>
+                                    <li style="padding: 5px;"><label><input type="checkbox"> analytics</label></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div>
+                            <strong style="color: var(--accent-blue);">Target Instance</strong>
+                            <div style="margin-left: 10px; margin-top: 5px; font-size: 0.9rem;">
+                                <div style="padding: 5px; background: var(--border-color); border-radius: 4px; margin-bottom: 5px;">staging</div>
+                                <ul style="list-style: none; padding-left: 0; margin: 5px 0;">
+                                    <li style="padding: 5px;"><label><input type="checkbox" checked> users</label></li>
+                                    <li style="padding: 5px;"><label><input type="checkbox" checked> orders</label></li>
+                                    <li style="padding: 5px;"><label><input type="checkbox"> products</label></li>
+                                    <li style="padding: 5px;"><label><input type="checkbox" checked> inventory</label></li>
+                                    <li style="padding: 5px;"><label><input type="checkbox"> analytics</label></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wireframe-section">
+                    <div class="wireframe-label">Advanced Selection</div>
+                    <div class="wireframe-content" style="min-height: 100px;">
+                        <div style="margin-bottom: 10px;">
+                            <label style="color: var(--accent-blue);">Collection Pattern (regex)</label>
+                            <input type="text" class="form-control" value="^(users|orders|products)$" placeholder="Regex pattern">
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <label style="color: var(--accent-blue);">Identifier Field</label>
+                            <input type="text" class="form-control" value="id" placeholder="Field name">
+                            <small style="color: var(--text-secondary);">Auto-detected: id (can override)</small>
+                        </div>
+                        <div>
+                            <label style="color: var(--accent-blue);">Composite Key Fields (comma-separated)</label>
+                            <input type="text" class="form-control" placeholder="field1,field2,field3">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-secondary">Load Snapshot</button>
+                    <button class="btn btn-primary">Run Comparison</button>
+                </div>
+            </div>
+        </div>
+        <div class="nav-dots" style="display: flex; gap: 8px; justify-content: center; padding: 20px;">
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot active" style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent-green);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+        </div>
+    </section>
+
+    <!-- Slide 4: Comparison Results -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2 style="margin-bottom: 1rem;">Comparison Results</h2>
+            <p style="color: var(--text-secondary);">Summary statistics showing created, updated, and deleted document counts.</p>
+
+            <div class="wireframe-container" style="margin-top: 3rem;">
+                <div class="wireframe-section">
+                    <div class="wireframe-label">Summary Statistics</div>
+                    <div class="stats-grid">
+                        <div class="stat-card created">
+                            <div class="stat-number" style="color: var(--accent-green);">15</div>
+                            <div class="stat-label">Created</div>
+                        </div>
+                        <div class="stat-card updated">
+                            <div class="stat-number" style="color: var(--accent-yellow);">42</div>
+                            <div class="stat-label">Updated</div>
+                        </div>
+                        <div class="stat-card deleted">
+                            <div class="stat-number" style="color: var(--accent-red);">8</div>
+                            <div class="stat-label">Deleted</div>
+                        </div>
+                    </div>
+                    <div class="legend">
+                        <div class="legend-item">
+                            <span class="color-indicator" style="background: var(--accent-green);"></span> Created
+                        </div>
+                        <div class="legend-item">
+                            <span class="color-indicator" style="background: var(--accent-yellow);"></span> Updated
+                        </div>
+                        <div class="legend-item">
+                            <span class="color-indicator" style="background: var(--accent-red);"></span> Deleted
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wireframe-section">
+                    <div class="wireframe-label">Export Options</div>
+                    <div class="export-options">
+                        <button class="export-btn">Export JSON</button>
+                        <button class="export-btn">Export CSV</button>
+                        <button class="export-btn" style="border-color: var(--accent-blue);">Export HTML</button>
+                    </div>
+                </div>
+
+                <div class="wireframe-section">
+                    <div class="wireframe-label">Monitoring Controls</div>
+                    <div class="monitoring-controls">
+                        <span style="font-weight: 600;">Continuous Monitoring:</span>
+                        <label class="toggle">
+                            <input type="checkbox" id="monitoring-toggle">
+                            <span class="slider"></span>
+                        </label>
+                        <span id="monitoring-status" style="color: var(--accent-red);">Stopped</span>
+                        <button class="btn btn-secondary">Refresh</button>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-secondary">Back</button>
+                    <button class="btn btn-primary">View Details</button>
+                </div>
+            </div>
+        </div>
+        <div class="nav-dots" style="display: flex; gap: 8px; justify-content: center; padding: 20px;">
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot active" style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent-green);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+        </div>
+    </section>
+
+    <!-- Slide 5: Diff View - Side by Side -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2 style="margin-bottom: 1rem;">Diff View: Side by Side</h2>
+            <p style="color: var(--text-secondary);">Compare documents side by side with clear visual indicators for changes.</p>
+
+            <div class="wireframe-container" style="margin-top: 3rem;">
+                <div class="tabs">
+                    <div class="tab active">Side by Side</div>
+                    <div class="tab">Unified Diff</div>
+                </div>
+
+                <div class="wireframe-section">
+                    <div class="wireframe-label">Document Comparison: users collection, id=12345</div>
+
+                    <div class="diff-view">
+                        <div>
+                            <div style="margin-bottom: 10px; font-weight: 600; color: var(--accent-blue);">Source Instance</div>
+                            <div class="diff-column">
+                                <div class="diff-line">{
+<div class="diff-line">  <span style="color: var(--accent-green);">"id"</span>: <span style="color: #3fb950;">"12345"</span>,</div>
+<div class="diff-line">  <span style="color: var(--accent-green);">"name"</span>: <span style="color: #3fb950;">"John Doe"</span>,</div>
+<div class="diff-line">  <span style="color: var(--accent-green);">"email"</span>: <span style="color: #3fb950;">"john@example.com"</span>,</div>
+<div class="diff-line">  <span style="color: var(--accent-green);">"status"</span>: <span style="color: #3fb950;">"active"</span>,</div>
+<div class="diff-line">  <span style="color: var(--accent-green);">"created_at"</span>: <span style="color: #3fb950;">"2024-01-15"</span></div>
+<div class="diff-line">}</div>
+                            </div>
+                        </div>
+                        <div>
+                            <div style="margin-bottom: 10px; font-weight: 600; color: var(--accent-blue);">Target Instance</div>
+                            <div class="diff-column">
+                                <div class="diff-line">{
+<div class="diff-line">  <span style="color: var(--accent-green);">"id"</span>: <span style="color: #3fb950;">"12345"</span>,</div>
+<div class="diff-line">  <span class="diff-change">"name"</span>: <span class="diff-change">"John Smith"</span>  <span style="color: var(--text-secondary);">// changed</span>,</div>
+<div class="diff-line">  <span class="diff-change">"email"</span>: <span class="diff-change">"john.smith@example.com"</span>  <span style="color: var(--text-secondary);">// changed</span>,</div>
+<div class="diff-line">  <span style="color: var(--accent-green);">"status"</span>: <span style="color: #3fb950;">"active"</span>,</div>
+<div class="diff-line">  <span class="diff-add">"updated_at"</span>: <span class="diff-add">"2024-06-20"</span>  <span style="color: var(--text-secondary);">// added</span></div>
+<div class="diff-line">}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wireframe-section">
+                    <div class="wireframe-label">Changed Fields Summary</div>
+                    <div class="wireframe-content" style="min-height: 100px;">
+                        <ul style="margin: 0; padding-left: 20px;">
+                            <li><strong style="color: var(--text-primary);">name</strong>: <span style="color: var(--accent-red);">"John Doe"</span> → <span style="color: var(--accent-green);">"John Smith"</span></li>
+                            <li><strong style="color: var(--text-primary);">email</strong>: <span style="color: var(--accent-red);">"john@example.com"</span> → <span style="color: var(--accent-green);">"john.smith@example.com"</span></li>
+                            <li><strong style="color: var(--text-primary);">updated_at</strong>: <span class="diff-add">+ added</span></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-secondary">Back</button>
+                    <button class="btn btn-secondary">Export Doc</button>
+                </div>
+            </div>
+        </div>
+        <div class="nav-dots" style="display: flex; gap: 8px; justify-content: center; padding: 20px;">
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot active" style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent-green);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+        </div>
+    </section>
+
+    <!-- Slide 6: Diff View - Color Highlighted -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2 style="margin-bottom: 1rem;">Diff View: Color Highlighted</h2>
+            <p style="color: var(--text-secondary);">Inline color-coded change indicators showing exactly what changed.</p>
+
+            <div class="wireframe-container" style="margin-top: 3rem;">
+                <div class="wireframe-section">
+                    <div class="wireframe-label">Color-Coded Diff Output</div>
+                    <div class="wireframe-content" style="min-height: 300px; font-family: monospace; font-size: 0.9rem;">
+<pre>
+{
+  <span style="color: var(--accent-green);">"id"</span>: <span style="color: #3fb950;">"12345"</span>,
+  <span class="diff-change">"name"</span>: <span class="diff-change">"John Smith"</span>  <span style="color: var(--text-secondary);">/* changed from "John Doe" */</span>,
+  <span class="diff-change">"email"</span>: <span class="diff-change">"john.smith@example.com"</span>  <span style="color: var(--text-secondary);">/* changed from "john@example.com" */</span>,
+  <span style="color: var(--accent-green);">"status"</span>: <span style="color: #3fb950;">"active"</span>,
+  <span style="color: var(--accent-green);">"created_at"</span>: <span style="color: #3fb950;">"2024-01-15"</span>,
+  <span class="diff-add">"updated_at"</span>: <span class="diff-add">"2024-06-20"</span>  <span style="color: var(--text-secondary);">/* + added field */</span>,
+  <span class="diff-remove">"old_field"</span>: <span class="diff-remove">"value"</span>  <span style="color: var(--text-secondary);">/* - removed field */</span>
+}
+</pre>
+                    </div>
+                </div>
+
+                <div class="wireframe-section">
+                    <div class="wireframe-label">Legend</div>
+                    <div class="legend">
+                        <div class="legend-item">
+                            <span class="color-indicator" style="background: var(--accent-green);"></span> Added field
+                        </div>
+                        <div class="legend-item">
+                            <span class="color-indicator" style="background: var(--accent-red);"></span> Removed field
+                        </div>
+                        <div class="legend-item">
+                            <span class="color-indicator" style="background: var(--accent-yellow);"></span> Changed field
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wireframe-section">
+                    <div class="wireframe-label">Nested Changes</div>
+                    <div class="wireframe-content" style="min-height: 100px; font-family: monospace; font-size: 0.85rem;">
+<pre>
+<span class="diff-change">"address"</span>: {
+  <span class="diff-change"><span style="color: var(--accent-green);">"city"</span></span>: <span class="diff-change"><span style="color: #3fb950;">"New York"</span></span>  <span style="color: var(--text-secondary);">/* changed from "Boston" */</span>,
+  <span class="diff-add"><span style="color: var(--accent-green);">"zip"</span></span>: <span class="diff-add"><span style="color: #3fb950;">"10001"</span></span>  <span style="color: var(--text-secondary);">/* + added */</span>,
+  <span class="diff-remove"><span style="color: var(--accent-green);">"suite"</span></span>: <span class="diff-remove"><span style="color: #3fb950;">"100"</span></span>  <span style="color: var(--text-secondary);">/* - removed */</span>
+}
+</pre>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-secondary">Back</button>
+                    <button class="btn btn-primary">Export Full</button>
+                </div>
+            </div>
+        </div>
+        <div class="nav-dots" style="display: flex; gap: 8px; justify-content: center; padding: 20px;">
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot active" style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent-green);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+        </div>
+    </section>
+
+    <!-- Slide 7: Snapshot Management -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2 style="margin-bottom: 1rem;">Snapshot Management</h2>
+            <p style="color: var(--text-secondary);">Save and load comparison configurations for recurring tasks.</p>
+
+            <div class="wireframe-container" style="margin-top: 3rem;">
+                <div class="wireframe-section">
+                    <div class="wireframe-label">Saved Snapshots</div>
+                    <div class="snapshot-list">
+                        <div class="snapshot-item">
+                            <div>
+                                <strong style="color: var(--accent-blue);">production → staging (users, orders)</strong>
+                                <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px;">Saved: 2024-06-15 14:30:00</div>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;">Load</button>
+                                <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem; background: rgba(248, 81, 73, 0.2); color: var(--accent-red);">Delete</button>
+                            </div>
+                        </div>
+                        <div class="snapshot-item">
+                            <div>
+                                <strong style="color: var(--accent-blue);">main → replica (all collections)</strong>
+                                <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px;">Saved: 2024-06-10 09:15:00</div>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;">Load</button>
+                                <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem; background: rgba(248, 81, 73, 0.2); color: var(--accent-red);">Delete</button>
+                            </div>
+                        </div>
+                        <div class="snapshot-item">
+                            <div>
+                                <strong style="color: var(--accent-blue);">dev → test (inventory only)</strong>
+                                <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px;">Saved: 2024-06-05 11:45:00</div>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;">Load</button>
+                                <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem; background: rgba(248, 81, 73, 0.2); color: var(--accent-red);">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wireframe-section">
+                    <div class="wireframe-label">Save Current Configuration</div>
+                    <div class="wireframe-content" style="min-height: 80px;">
+                        <div style="margin-bottom: 10px;">
+                            <label style="color: var(--accent-blue);">Snapshot Name</label>
+                            <input type="text" class="form-control" placeholder="e.g., daily-sync-check">
+                        </div>
+                        <div style="margin-bottom: 10px;">
+                            <label style="color: var(--accent-blue);">Description (optional)</label>
+                            <textarea class="form-control" rows="2" placeholder="What this snapshot is for..."></textarea>
+                        </div>
+                        <button class="btn btn-primary" style="width: 100%;">Save Snapshot</button>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-secondary">Back</button>
+                    <button class="btn btn-primary">Run Comparison</button>
+                </div>
+            </div>
+        </div>
+        <div class="nav-dots" style="display: flex; gap: 8px; justify-content: center; padding: 20px;">
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot active" style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent-green);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+        </div>
+    </section>
+
+    <!-- Slide 8: Export & HTML Report -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2 style="margin-bottom: 1rem;">Export & HTML Report</h2>
+            <p style="color: var(--text-secondary);">Generate interactive HTML reports with full diff visualization.</p>
+
+            <div class="wireframe-container" style="margin-top: 3rem;">
+                <div class="wireframe-section">
+                    <div class="wireframe-label">Export Format Options</div>
+                    <div class="grid" style="margin-top: 1rem;">
+                        <div class="grid-card">
+                            <h3>JSON</h3>
+                            <p>Raw structured data</p>
+                            <button class="btn btn-secondary" style="margin-top: 10px; width: 100%;">Download</button>
+                        </div>
+                        <div class="grid-card">
+                            <h3>CSV</h3>
+                            <p>Tabular for spreadsheets</p>
+                            <button class="btn btn-secondary" style="margin-top: 10px; width: 100%;">Download</button>
+                        </div>
+                        <div class="grid-card" style="border-color: var(--accent-blue);">
+                            <h3>HTML</h3>
+                            <p>Interactive visual report</p>
+                            <button class="btn btn-primary" style="margin-top: 10px; width: 100%;">Download</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wireframe-section">
+                    <div class="wireframe-label">HTML Report Features</div>
+                    <div class="wireframe-content" style="min-height: 150px;">
+                        <ul style="margin: 0; padding-left: 20px;">
+                            <li>Side-by-side viewers for document comparison</li>
+                            <li>Color-coded highlighting (green/red/yellow)</li>
+                            <li>Filterable/sortable diff list</li>
+                            <li>Export individual documents</li>
+                            <li>Expand/collapse nested fields</li>
+                            <li>Shareable URL with embedded data</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="wireframe-section">
+                    <div class="wireframe-label">Report Preview (HTML)</div>
+                    <div class="terminal-window">
+                        <div class="terminal-header">
+                            <div class="terminal-dot dot-red"></div>
+                            <div class="terminal-dot dot-yellow"></div>
+                            <div class="terminal-dot dot-green"></div>
+                        </div>
+                        <div class="terminal-body">
+                            <div class="terminal-line" style="color: var(--text-primary);">Summary Stats</div>
+                            <div class="terminal-line" style="color: var(--accent-green);">✓ 15 created</div>
+                            <div class="terminal-line" style="color: var(--accent-yellow);">⚠ 42 updated</div>
+                            <div class="terminal-line" style="color: var(--accent-red);">✗ 8 deleted</div>
+                            <div class="terminal-line" style="margin-top: 10px; color: var(--text-primary);">Sample Changes</div>
+                            <div class="terminal-line" style="color: var(--accent-yellow);">name: "John Doe" → "John Smith"</div>
+                            <div class="terminal-line" style="color: var(--accent-yellow);">email: "john@example.com" → "john.smith@example.com"</div>
+                            <div class="terminal-line" style="color: var(--accent-green);">+ updated_at: "2024-06-20"</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-secondary">Back</button>
+                    <button class="btn btn-primary">Open Report</button>
+                </div>
+            </div>
+        </div>
+        <div class="nav-dots" style="display: flex; gap: 8px; justify-content: center; padding: 20px;">
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot" style="width: 10px; height: 10px; border-radius: 50%; background: var(--border-color);"></div>
+            <div class="nav-dot active" style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent-green);"></div>
+        </div>
+    </section>
+
+    <script>
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowDown') {
+                const current = document.querySelector('.slide.active') || document.querySelector('.slide');
+                const next = current.nextElementSibling;
+                if (next && next.classList.contains('slide')) {
+                    next.scrollIntoView({ behavior: 'smooth' });
+                }
+            } else if (e.key === 'ArrowUp') {
+                const current = document.querySelector('.slide.active') || document.querySelector('.slide');
+                const prev = current.previousElementSibling;
+                if (prev && prev.classList.contains('slide')) {
+                    prev.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        });
+
+        // Mouse wheel navigation
+        document.addEventListener('wheel', function(e) {
+            if (e.deltaY > 0) {
+                const current = document.querySelector('.slide.active') || document.querySelector('.slide');
+                const next = current.nextElementSibling;
+                if (next && next.classList.contains('slide')) {
+                    e.preventDefault();
+                    next.scrollIntoView({ behavior: 'smooth' });
+                }
+            } else if (e.deltaY < 0) {
+                const current = document.querySelector('.slide.active') || document.querySelector('.slide');
+                const prev = current.previousElementSibling;
+                if (prev && prev.classList.contains('slide')) {
+                    e.preventDefault();
+                    prev.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        });
+    </script>
+</body>
+</html>
