@@ -1,6 +1,6 @@
-use mongodb::Client;
-use mongodb::bson::Document;
 use anyhow::Result;
+use mongodb::bson::Document;
+use mongodb::Client;
 
 pub async fn connect_to_mongo(uri: &str) -> Result<Client> {
     let client = mongodb::Client::with_uri_str(uri).await?;

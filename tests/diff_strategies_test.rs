@@ -3,10 +3,10 @@
 //! This module contains all integration tests for verifying custom diff strategies
 //! in the comparison results.
 
+use anyhow::Result;
 use mongo_compare::comparison::find_field_diffs;
 use mongo_compare::types::DiffStrategy;
 use serde_json::json;
-use anyhow::Result;
 
 #[tokio::test]
 async fn test_diff_strategy_all() -> Result<()> {
@@ -29,8 +29,14 @@ async fn test_diff_strategy_all() -> Result<()> {
         .map(|f| f.field_name.clone())
         .collect();
 
-    assert!(field_names.contains(&"name".to_string()), "Should detect 'name' field change");
-    assert!(field_names.contains(&"nested.field".to_string()), "Should detect nested field change");
+    assert!(
+        field_names.contains(&"name".to_string()),
+        "Should detect 'name' field change"
+    );
+    assert!(
+        field_names.contains(&"nested.field".to_string()),
+        "Should detect nested field change"
+    );
 
     Ok(())
 }
@@ -61,8 +67,14 @@ async fn test_diff_strategy_whitelist() -> Result<()> {
         .map(|f| f.field_name.clone())
         .collect();
 
-    assert!(field_names.contains(&"name".to_string()), "Should detect 'name' field change");
-    assert!(field_names.contains(&"nested.field".to_string()), "Should detect nested field change");
+    assert!(
+        field_names.contains(&"name".to_string()),
+        "Should detect 'name' field change"
+    );
+    assert!(
+        field_names.contains(&"nested.field".to_string()),
+        "Should detect nested field change"
+    );
 
     Ok(())
 }
@@ -74,7 +86,12 @@ async fn test_diff_strategy_whitelist_only_identifier() -> Result<()> {
     let doc_before = json!({"id": 1, "name": "Original", "value": 100});
     let doc_after = json!({"id": 1, "name": "Updated", "value": 100});
 
-    let diff = find_field_diffs(&doc_before, &doc_after, "id", DiffStrategy::Whitelist(vec!["id".to_string()]))?;
+    let diff = find_field_diffs(
+        &doc_before,
+        &doc_after,
+        "id",
+        DiffStrategy::Whitelist(vec!["id".to_string()]),
+    )?;
 
     assert_eq!(
         diff.changed_fields.len(),
@@ -92,7 +109,12 @@ async fn test_diff_strategy_whitelist_empty() -> Result<()> {
     let doc_before = json!({"id": 1, "name": "Original", "value": 100});
     let doc_after = json!({"id": 1, "name": "Updated", "value": 100});
 
-    let diff = find_field_diffs(&doc_before, &doc_after, "id", DiffStrategy::Whitelist(vec![]))?;
+    let diff = find_field_diffs(
+        &doc_before,
+        &doc_after,
+        "id",
+        DiffStrategy::Whitelist(vec![]),
+    )?;
 
     assert_eq!(
         diff.changed_fields.len(),
@@ -108,7 +130,8 @@ async fn test_diff_strategy_blacklist() -> Result<()> {
     let _ = env_logger::builder().is_test(true).try_init();
 
     let doc_before = json!({"id": 1, "name": "Original", "value": 100, "metadata": {"created_at": "2024-01-01"}});
-    let doc_after = json!({"id": 1, "name": "Updated", "value": 100, "metadata": {"created_at": "2024-01-01"}});
+    let doc_after =
+        json!({"id": 1, "name": "Updated", "value": 100, "metadata": {"created_at": "2024-01-01"}});
 
     let diff = find_field_diffs(
         &doc_before,
@@ -129,8 +152,14 @@ async fn test_diff_strategy_blacklist() -> Result<()> {
         .map(|f| f.field_name.clone())
         .collect();
 
-    assert!(field_names.contains(&"name".to_string()), "Should detect 'name' field change");
-    assert!(!field_names.contains(&"metadata".to_string()), "Should not detect 'metadata' field change");
+    assert!(
+        field_names.contains(&"name".to_string()),
+        "Should detect 'name' field change"
+    );
+    assert!(
+        !field_names.contains(&"metadata".to_string()),
+        "Should not detect 'metadata' field change"
+    );
 
     Ok(())
 }
@@ -142,7 +171,12 @@ async fn test_diff_strategy_blacklist_identifier() -> Result<()> {
     let doc_before = json!({"id": 1, "name": "Original", "value": 100});
     let doc_after = json!({"id": 1, "name": "Updated", "value": 100});
 
-    let diff = find_field_diffs(&doc_before, &doc_after, "id", DiffStrategy::Blacklist(vec!["id".to_string()]))?;
+    let diff = find_field_diffs(
+        &doc_before,
+        &doc_after,
+        "id",
+        DiffStrategy::Blacklist(vec!["id".to_string()]),
+    )?;
 
     assert_eq!(
         diff.changed_fields.len(),
@@ -160,7 +194,12 @@ async fn test_diff_strategy_blacklist_empty() -> Result<()> {
     let doc_before = json!({"id": 1, "name": "Original", "value": 100});
     let doc_after = json!({"id": 1, "name": "Updated", "value": 100});
 
-    let diff = find_field_diffs(&doc_before, &doc_after, "id", DiffStrategy::Blacklist(vec![]))?;
+    let diff = find_field_diffs(
+        &doc_before,
+        &doc_after,
+        "id",
+        DiffStrategy::Blacklist(vec![]),
+    )?;
 
     assert_eq!(
         diff.changed_fields.len(),
@@ -175,8 +214,10 @@ async fn test_diff_strategy_blacklist_empty() -> Result<()> {
 async fn test_diff_strategy_deep_equality() -> Result<()> {
     let _ = env_logger::builder().is_test(true).try_init();
 
-    let doc_before = json!({"id": 1, "name": "Original", "nested": {"field1": "value1", "field2": "value2"}});
-    let doc_after = json!({"id": 1, "name": "Updated", "nested": {"field1": "value1", "field2": "value2"}});
+    let doc_before =
+        json!({"id": 1, "name": "Original", "nested": {"field1": "value1", "field2": "value2"}});
+    let doc_after =
+        json!({"id": 1, "name": "Updated", "nested": {"field1": "value1", "field2": "value2"}});
 
     let diff = find_field_diffs(&doc_before, &doc_after, "id", DiffStrategy::DeepEquality)?;
 
@@ -192,8 +233,14 @@ async fn test_diff_strategy_deep_equality() -> Result<()> {
         .map(|f| f.field_name.clone())
         .collect();
 
-    assert!(field_names.contains(&"name".to_string()), "Should detect 'name' field change");
-    assert!(!field_names.contains(&"nested".to_string()), "Should not detect nested field change with deep equality");
+    assert!(
+        field_names.contains(&"name".to_string()),
+        "Should detect 'name' field change"
+    );
+    assert!(
+        !field_names.contains(&"nested".to_string()),
+        "Should not detect nested field change with deep equality"
+    );
 
     Ok(())
 }
@@ -202,8 +249,10 @@ async fn test_diff_strategy_deep_equality() -> Result<()> {
 async fn test_diff_strategy_deep_equality_with_nested_change() -> Result<()> {
     let _ = env_logger::builder().is_test(true).try_init();
 
-    let doc_before = json!({"id": 1, "name": "Original", "nested": {"field1": "value1", "field2": "value2"}});
-    let doc_after = json!({"id": 1, "name": "Updated", "nested": {"field1": "value1", "field2": "value3"}});
+    let doc_before =
+        json!({"id": 1, "name": "Original", "nested": {"field1": "value1", "field2": "value2"}});
+    let doc_after =
+        json!({"id": 1, "name": "Updated", "nested": {"field1": "value1", "field2": "value3"}});
 
     let diff = find_field_diffs(&doc_before, &doc_after, "id", DiffStrategy::DeepEquality)?;
 
@@ -219,8 +268,14 @@ async fn test_diff_strategy_deep_equality_with_nested_change() -> Result<()> {
         .map(|f| f.field_name.clone())
         .collect();
 
-    assert!(field_names.contains(&"name".to_string()), "Should detect 'name' field change");
-    assert!(!field_names.contains(&"nested.field2".to_string()), "Should not detect nested field change with deep equality");
+    assert!(
+        field_names.contains(&"name".to_string()),
+        "Should detect 'name' field change"
+    );
+    assert!(
+        !field_names.contains(&"nested.field2".to_string()),
+        "Should not detect nested field change with deep equality"
+    );
 
     Ok(())
 }
@@ -229,8 +284,10 @@ async fn test_diff_strategy_deep_equality_with_nested_change() -> Result<()> {
 async fn test_diff_strategy_whitelist_with_nested_fields() -> Result<()> {
     let _ = env_logger::builder().is_test(true).try_init();
 
-    let doc_before = json!({"id": 1, "name": "Original", "nested": {"field1": "value1", "field2": "value2"}});
-    let doc_after = json!({"id": 1, "name": "Updated", "nested": {"field1": "value1", "field2": "value2"}});
+    let doc_before =
+        json!({"id": 1, "name": "Original", "nested": {"field1": "value1", "field2": "value2"}});
+    let doc_after =
+        json!({"id": 1, "name": "Updated", "nested": {"field1": "value1", "field2": "value2"}});
 
     let diff = find_field_diffs(
         &doc_before,
@@ -252,8 +309,10 @@ async fn test_diff_strategy_whitelist_with_nested_fields() -> Result<()> {
 async fn test_diff_strategy_blacklist_with_nested_fields() -> Result<()> {
     let _ = env_logger::builder().is_test(true).try_init();
 
-    let doc_before = json!({"id": 1, "name": "Original", "nested": {"field1": "value1", "field2": "value2"}});
-    let doc_after = json!({"id": 1, "name": "Updated", "nested": {"field1": "value1", "field2": "value2"}});
+    let doc_before =
+        json!({"id": 1, "name": "Original", "nested": {"field1": "value1", "field2": "value2"}});
+    let doc_after =
+        json!({"id": 1, "name": "Updated", "nested": {"field1": "value1", "field2": "value2"}});
 
     let diff = find_field_diffs(
         &doc_before,

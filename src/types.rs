@@ -116,5 +116,5 @@ pub struct DocumentDiff {
 pub struct ChangedField {
     pub field_name: String,
     pub old_value: String,
-   pub new_value: String,
+    pub new_value: String,
 }

@@ -1,8 +1,15 @@
-use serde_json::Value as JsonValue;
-use crate::types::{DocumentDiff, ChangedField, DiffStrategy};
+use crate::types::{ChangedField, DiffStrategy, DocumentDiff};
 use anyhow::Result;
+use serde_json::Value as JsonValue;
 
-type ComparisonResult = (usize, usize, usize, Vec<DocumentDiff>, Vec<JsonValue>, Vec<JsonValue>);
+type ComparisonResult = (
+    usize,
+    usize,
+    usize,
+    Vec<DocumentDiff>,
+    Vec<JsonValue>,
+    Vec<JsonValue>,
+);
 
 pub fn compare_documents(
     docs_before: Vec<JsonValue>,
@@ -18,7 +25,8 @@ pub fn compare_documents(
     let mut sample_updated: Vec<DocumentDiff> = Vec::new();
     let mut sample_deleted: Vec<JsonValue> = Vec::new();
 
-    let mut before_map: std::collections::HashMap<String, JsonValue> = std::collections::HashMap::new();
+    let mut before_map: std::collections::HashMap<String, JsonValue> =
+        std::collections::HashMap::new();
 
     for doc in &docs_before {
         if let Some(id) = doc.get(identifier_field) {
@@ -31,7 +39,12 @@ pub fn compare_documents(
             let id_str = id.to_string();
             if before_map.contains_key(&id_str) {
                 let doc_before = before_map.get(&id_str).unwrap();
-                let diff = find_field_diffs(doc_before, doc_after, identifier_field, diff_strategy.clone())?;
+                let diff = find_field_diffs(
+                    doc_before,
+                    doc_after,
+                    identifier_field,
+                    diff_strategy.clone(),
+                )?;
                 if !diff.changed_fields.is_empty() {
                     updated_count += 1;
                     if sample_limit > 0 && sample_updated.len() < sample_limit {
@@ -64,7 +77,14 @@ pub fn compare_documents(
         }
     }
 
-    Ok((created_count, updated_count, deleted_count, sample_updated, sample_created, sample_deleted))
+    Ok((
+        created_count,
+        updated_count,
+        deleted_count,
+        sample_updated,
+        sample_created,
+        sample_deleted,
+    ))
 }
 
 pub struct FieldDiff {
@@ -96,7 +116,12 @@ pub fn find_field_diffs(
 
                             if v_before.is_object() && v_after.is_object() {
                                 let mut nested_diffs: Vec<ChangedField> = Vec::new();
-                                find_nested_diffs(v_before, v_after, vec![key.clone()], &mut nested_diffs)?;
+                                find_nested_diffs(
+                                    v_before,
+                                    v_after,
+                                    vec![key.clone()],
+                                    &mut nested_diffs,
+                                )?;
                                 changed_fields.extend(nested_diffs);
                             } else {
                                 changed_fields.push(ChangedField {
@@ -137,7 +162,12 @@ pub fn find_field_diffs(
 
                                 if v_before.is_object() && v_after.is_object() {
                                     let mut nested_diffs: Vec<ChangedField> = Vec::new();
-                                    find_nested_diffs(v_before, v_after, vec![field.clone()], &mut nested_diffs)?;
+                                    find_nested_diffs(
+                                        v_before,
+                                        v_after,
+                                        vec![field.clone()],
+                                        &mut nested_diffs,
+                                    )?;
                                     changed_fields.extend(nested_diffs);
                                 } else {
                                     changed_fields.push(ChangedField {
@@ -180,7 +210,12 @@ pub fn find_field_diffs(
 
                             if v_before.is_object() && v_after.is_object() {
                                 let mut nested_diffs: Vec<ChangedField> = Vec::new();
-                                find_nested_diffs(v_before, v_after, vec![key.clone()], &mut nested_diffs)?;
+                                find_nested_diffs(
+                                    v_before,
+                                    v_after,
+                                    vec![key.clone()],
+                                    &mut nested_diffs,
+                                )?;
                                 changed_fields.extend(nested_diffs);
                             } else {
                                 changed_fields.push(ChangedField {
@@ -256,7 +291,9 @@ pub fn find_field_diffs(
         }
     }
 
-    Ok(FieldDiff { changed_fields: deduplicated })
+    Ok(FieldDiff {
+        changed_fields: deduplicated,
+    })
 }
 
 fn find_nested_diffs(
@@ -320,8 +357,10 @@ fn get_nested_value<'a>(doc: &'a JsonValue, path: &str) -> Option<&'a JsonValue>
 }
 
 fn strip_quotes(value: &str) -> String {
-    if (value.starts_with('"') && value.ends_with('"')) || (value.starts_with('\'') && value.ends_with('\'')) {
-        value[1..value.len()-1].to_string()
+    if (value.starts_with('"') && value.ends_with('"'))
+        || (value.starts_with('\'') && value.ends_with('\''))
+    {
+        value[1..value.len() - 1].to_string()
     } else {
         value.to_string()
     }

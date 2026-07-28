@@ -5,4 +5,4 @@ pub mod output;
 pub mod types;
 
 pub use comparison::{compare_documents, find_field_diffs};
-pub use types::{ComparisonResult, DocumentDiff, ChangedField, DiffStrategy};
+pub use types::{ChangedField, ComparisonResult, DiffStrategy, DocumentDiff};

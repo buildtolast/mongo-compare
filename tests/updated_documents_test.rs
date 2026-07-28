@@ -4,10 +4,10 @@
 //! identical identifiers but different field values are correctly identified
 //! as updated with proper difference details.
 
+use anyhow::Result;
 use mongo_compare::comparison::{compare_documents, find_field_diffs};
 use mongo_compare::types::{ChangedField, DiffStrategy, DocumentDiff};
 use serde_json::json;
-use anyhow::Result;
 
 #[tokio::test]
 async fn test_updated_documents_all_aspects() -> Result<()> {
@@ -36,13 +36,11 @@ async fn test_updated_documents_all_aspects() -> Result<()> {
     let expected_updated = vec![
         DocumentDiff {
             identifier: "1".to_string(),
-            changed_fields: vec![
-                ChangedField {
-                    field_name: "name".to_string(),
-                    old_value: "Original Name 1".to_string(),
-                    new_value: "Updated Name 1".to_string(),
-                },
-            ],
+            changed_fields: vec![ChangedField {
+                field_name: "name".to_string(),
+                old_value: "Original Name 1".to_string(),
+                new_value: "Updated Name 1".to_string(),
+            }],
         },
         DocumentDiff {
             identifier: "2".to_string(),
@@ -98,13 +96,11 @@ async fn test_updated_documents_nested_and_array_changes() -> Result<()> {
 
     let expected_updated = DocumentDiff {
         identifier: "1".to_string(),
-        changed_fields: vec![
-            ChangedField {
-                field_name: "nested.field2".to_string(),
-                old_value: "value2".to_string(),
-                new_value: "new_value2".to_string(),
-            },
-        ],
+        changed_fields: vec![ChangedField {
+            field_name: "nested.field2".to_string(),
+            old_value: "value2".to_string(),
+            new_value: "new_value2".to_string(),
+        }],
     };
 
     let found = sample_updated.iter().find(|actual| {
@@ -159,13 +155,11 @@ async fn test_updated_documents_multiple_fields_null_values() -> Result<()> {
         },
         DocumentDiff {
             identifier: "2".to_string(),
-            changed_fields: vec![
-                ChangedField {
-                    field_name: "field2".to_string(),
-                    old_value: "null".to_string(),
-                    new_value: "null".to_string(),
-                },
-            ],
+            changed_fields: vec![ChangedField {
+                field_name: "field2".to_string(),
+                old_value: "null".to_string(),
+                new_value: "null".to_string(),
+            }],
         },
     ];
 
@@ -196,7 +190,10 @@ async fn test_find_field_diffs() -> Result<()> {
 
     println!("DEBUG: changed_fields: {:?}", diff.changed_fields);
     println!("DEBUG: field_names: {:?}", {
-        diff.changed_fields.iter().map(|f| f.field_name.clone()).collect::<Vec<_>>()
+        diff.changed_fields
+            .iter()
+            .map(|f| f.field_name.clone())
+            .collect::<Vec<_>>()
     });
 
     assert_eq!(
@@ -211,8 +208,14 @@ async fn test_find_field_diffs() -> Result<()> {
         .map(|f| f.field_name.clone())
         .collect();
 
-    assert!(field_names.contains(&"name".to_string()), "Should detect 'name' field change");
-    assert!(field_names.contains(&"nested.field".to_string()), "Should detect nested field change");
+    assert!(
+        field_names.contains(&"name".to_string()),
+        "Should detect 'name' field change"
+    );
+    assert!(
+        field_names.contains(&"nested.field".to_string()),
+        "Should detect nested field change"
+    );
 
     Ok(())
 }

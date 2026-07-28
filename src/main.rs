@@ -1,10 +1,10 @@
+use anyhow::Result;
+use mongo_compare::comparison::compare_documents;
 use mongo_compare::mongo::connect_to_mongo;
 use mongo_compare::mongo::get_collection;
-use mongo_compare::comparison::compare_documents;
 use mongo_compare::output::print_summary;
 use mongo_compare::output::write_summary;
 use mongo_compare::types::ComparisonResult;
-use anyhow::Result;
 use std::time::Instant;
 
 #[tokio::main]
@@ -21,7 +21,10 @@ async fn main() -> Result<()> {
     println!("   Database: {}", config.db_name);
     println!("   Collection A (before): {}", config.collection_before);
     println!("   Collection B (after): {}", config.collection_after);
-    println!("   Filter: {}\n", serde_json::to_string_pretty(&config.filter)?);
+    println!(
+        "   Filter: {}\n",
+        serde_json::to_string_pretty(&config.filter)?
+    );
 
     println!("🔌 Connecting to MongoDB...");
     let start = Instant::now();
@@ -38,8 +41,13 @@ async fn main() -> Result<()> {
         &filter_doc,
         &config.unique_identifier_field,
         config.batch_size,
-    ).await?;
-    println!("✅ Processed {} documents in {:?}\n", docs_before.len(), start.elapsed());
+    )
+    .await?;
+    println!(
+        "✅ Processed {} documents in {:?}\n",
+        docs_before.len(),
+        start.elapsed()
+    );
 
     println!("📚 Processing collection B (after)...");
     let start = Instant::now();
@@ -50,8 +58,13 @@ async fn main() -> Result<()> {
         &filter_doc,
         &config.unique_identifier_field,
         config.batch_size,
-    ).await?;
-    println!("✅ Processed {} documents in {:?}\n", docs_after.len(), start.elapsed());
+    )
+    .await?;
+    println!(
+        "✅ Processed {} documents in {:?}\n",
+        docs_after.len(),
+        start.elapsed()
+    );
 
     println!("🔍 Comparing collections...");
     let (created, updated, deleted, sample_updated, _, sample_deleted) = compare_documents(
@@ -63,13 +76,7 @@ async fn main() -> Result<()> {
     )?;
     println!("✅ Comparison complete\n");
 
-    print_summary(
-        created,
-        updated,
-        deleted,
-        &sample_updated,
-        &sample_deleted,
-    );
+    print_summary(created, updated, deleted, &sample_updated, &sample_deleted);
 
     let total_before = docs_before.len();
     let total_after = docs_after.len();
