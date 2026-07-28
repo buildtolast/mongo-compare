@@ -64,11 +64,7 @@ async fn test_sample_limit_custom_returns_exact_count() -> Result<()> {
 
     assert_eq!(sample_created.len(), 3, "Should have exactly 3 sample created documents");
 
-    let sample_created_ids = vec![
-        json!(3),
-        json!(4),
-        json!(5),
-    ];
+    let sample_created_ids = [json!(3), json!(4), json!(5)];
 
     for (i, id) in sample_created_ids.iter().enumerate() {
         assert!(
@@ -213,12 +209,7 @@ async fn test_sample_limit_default_five() -> Result<()> {
 
     assert_eq!(sample_created.len(), 4, "Should have 4 sample created documents");
 
-    let sample_created_ids = vec![
-        json!(3),
-        json!(4),
-        json!(5),
-        json!(6),
-    ];
+    let sample_created_ids = [json!(3), json!(4), json!(5), json!(6)];
 
     for (i, id) in sample_created_ids.iter().enumerate() {
         assert!(
