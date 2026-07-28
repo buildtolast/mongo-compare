@@ -16,7 +16,7 @@ async fn main() -> Result<()> {
 
     let config = mongo_compare::config::load_config()?;
 
-    println!("📖 Loading config from: {}", "config.json");
+    println!("📖 Loading config from: config.json");
     println!("   MongoDB URI: {}", config.mongo_uri);
     println!("   Database: {}", config.db_name);
     println!("   Collection A (before): {}", config.collection_before);
@@ -54,10 +54,12 @@ async fn main() -> Result<()> {
     println!("✅ Processed {} documents in {:?}\n", docs_after.len(), start.elapsed());
 
     println!("🔍 Comparing collections...");
-    let (created, updated, deleted, sample_updated, sample_created, sample_deleted) = compare_documents(
+    let (created, updated, deleted, sample_updated, _, sample_deleted) = compare_documents(
         docs_before.clone(),
         docs_after.clone(),
         &config.unique_identifier_field,
+        config.sample_limit,
+        config.diff_strategy,
     )?;
     println!("✅ Comparison complete\n");
 
@@ -100,14 +102,14 @@ async fn process_collection(
     db_name: &str,
     collection_name: &str,
     filter: &mongodb::bson::Document,
-    identifier_field: &str,
-    batch_size: usize,
+    _identifier_field: &str,
+    _batch_size: usize,
 ) -> Result<Vec<serde_json::Value>> {
     let collection = get_collection(client, db_name, collection_name).await?;
 
     let mut all_docs: Vec<serde_json::Value> = Vec::new();
 
-    let mut cursor = collection.find(filter.clone()).await?;
+    let cursor = collection.find(filter.clone()).await?;
 
     while cursor.has_next() {
         let doc = cursor.deserialize_current()?;

@@ -5,7 +5,7 @@
 //! as updated with proper difference details.
 
 use mongo_compare::comparison::{compare_documents, find_field_diffs};
-use mongo_compare::types::{DocumentDiff, ChangedField};
+use mongo_compare::types::{ChangedField, DiffStrategy, DocumentDiff};
 use serde_json::json;
 use anyhow::Result;
 
@@ -26,12 +26,12 @@ async fn test_updated_documents_all_aspects() -> Result<()> {
         json!({"id": 4, "name": "New Document", "value": 400}),
     ];
 
-    let (created, updated, deleted, sample_updated, sample_created, sample_deleted) =
-        compare_documents(docs_before, docs_after, "id")?;
+    let (created, updated, _deleted, sample_updated, _sample_created, _sample_deleted) =
+        compare_documents(docs_before, docs_after, "id", 5, DiffStrategy::All)?;
 
     assert_eq!(created, 1, "Should identify 1 created document");
     assert_eq!(updated, 3, "Should identify 3 updated documents");
-    assert_eq!(deleted, 0, "Should not identify any deleted documents");
+    assert_eq!(_deleted, 0, "Should not identify any deleted documents");
 
     let expected_updated = vec![
         DocumentDiff {
@@ -89,12 +89,12 @@ async fn test_updated_documents_nested_and_array_changes() -> Result<()> {
         json!({"id": 3, "name": "Test", "nested": {"field1": "value1", "field2": "value2"}}),
     ];
 
-    let (created, updated, deleted, sample_updated, sample_created, sample_deleted) =
-        compare_documents(docs_before, docs_after, "id")?;
+    let (created, updated, _deleted, sample_updated, _sample_created, _sample_deleted) =
+        compare_documents(docs_before, docs_after, "id", 5, DiffStrategy::All)?;
 
     assert_eq!(created, 1, "Should identify 1 created document");
     assert_eq!(updated, 2, "Should identify 2 updated documents");
-    assert_eq!(deleted, 0, "Should not identify any deleted documents");
+    assert_eq!(_deleted, 0, "Should not identify any deleted documents");
 
     let expected_updated = DocumentDiff {
         identifier: "1".to_string(),
@@ -134,12 +134,12 @@ async fn test_updated_documents_multiple_fields_null_values() -> Result<()> {
         json!({"id": 2, "name": "Test", "field1": "value1", "field2": null}),
     ];
 
-    let (created, updated, deleted, sample_updated, sample_created, sample_deleted) =
-        compare_documents(docs_before, docs_after, "id")?;
+    let (created, updated, _deleted, sample_updated, _sample_created, _sample_deleted) =
+        compare_documents(docs_before, docs_after, "id", 5, DiffStrategy::All)?;
 
     assert_eq!(created, 0, "Should not identify any created documents");
     assert_eq!(updated, 2, "Should identify 2 updated documents");
-    assert_eq!(deleted, 0, "Should not identify any deleted documents");
+    assert_eq!(_deleted, 0, "Should not identify any deleted documents");
 
     let expected_updates = vec![
         DocumentDiff {
@@ -192,7 +192,7 @@ async fn test_find_field_diffs() -> Result<()> {
     let doc_before = json!({"id": 1, "name": "Original", "value": 100, "nested": {"field": "old"}});
     let doc_after = json!({"id": 1, "name": "Updated", "value": 100, "nested": {"field": "new"}});
 
-    let diff = find_field_diffs(&doc_before, &doc_after, "id")?;
+    let diff = find_field_diffs(&doc_before, &doc_after, "id", DiffStrategy::All)?;
 
     println!("DEBUG: changed_fields: {:?}", diff.changed_fields);
     println!("DEBUG: field_names: {:?}", {
@@ -224,7 +224,7 @@ async fn test_find_field_diffs_no_changes() -> Result<()> {
     let doc_before = json!({"id": 1, "name": "Test", "value": 100});
     let doc_after = json!({"id": 1, "name": "Test", "value": 100});
 
-    let diff = find_field_diffs(&doc_before, &doc_after, "id")?;
+    let diff = find_field_diffs(&doc_before, &doc_after, "id", DiffStrategy::All)?;
 
     assert_eq!(
         diff.changed_fields.len(),

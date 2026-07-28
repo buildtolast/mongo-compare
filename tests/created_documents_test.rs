@@ -3,31 +3,33 @@
 //! This module contains all integration tests for verifying that newly added
 //! documents in the "after" collection are correctly identified as created.
 
-use mongo_compare::comparison::compare_documents;
-use serde_json::json;
-use anyhow::Result;
+    use mongo_compare::comparison::{compare_documents, find_field_diffs};
+    use mongo_compare::types::{DocumentDiff, ChangedField, DiffStrategy};
+    use serde_json::json;
+    use anyhow::Result;
 
-#[tokio::test]
-async fn test_created_documents_all_aspects() -> Result<()> {
-    let _ = env_logger::builder().is_test(true).try_init();
 
-    let docs_before: Vec<serde_json::Value> = vec![
-        json!({"id": 1, "name": "Document 1", "value": 100}),
-        json!({"id": 2, "name": "Document 2", "value": 200}),
-        json!({"id": 3, "name": "Document 3", "value": 300}),
-    ];
+    #[tokio::test]
+    async fn test_created_documents_all_aspects() -> Result<()> {
+        let _ = env_logger::builder().is_test(true).try_init();
 
-    let docs_after: Vec<serde_json::Value> = vec![
-        json!({"id": 1, "name": "Document 1", "value": 100}),
-        json!({"id": 2, "name": "Document 2", "value": 200}),
-        json!({"id": 3, "name": "Document 3", "value": 300}),
-        json!({"id": 4, "name": "New Document", "value": 400}),
-        json!({"id": 5, "name": "Another New Document", "value": 500}),
-        json!({"id": 6, "name": "Yet Another New Document", "value": 600}),
-    ];
+        let docs_before: Vec<serde_json::Value> = vec![
+            json!({"id": 1, "name": "Document 1", "value": 100}),
+            json!({"id": 2, "name": "Document 2", "value": 200}),
+            json!({"id": 3, "name": "Document 3", "value": 300}),
+        ];
 
-    let (created, updated, deleted, sample_updated, sample_created, sample_deleted) =
-        compare_documents(docs_before, docs_after, "id")?;
+        let docs_after: Vec<serde_json::Value> = vec![
+            json!({"id": 1, "name": "Document 1", "value": 100}),
+            json!({"id": 2, "name": "Document 2", "value": 200}),
+            json!({"id": 3, "name": "Document 3", "value": 300}),
+            json!({"id": 4, "name": "New Document", "value": 400}),
+            json!({"id": 5, "name": "Another New Document", "value": 500}),
+            json!({"id": 6, "name": "Yet Another New Document", "value": 600}),
+        ];
+
+        let (created, updated, deleted, sample_updated, sample_created, sample_deleted) =
+            compare_documents(docs_before, docs_after, "id", 5, DiffStrategy::All)?;
 
     assert_eq!(created, 3, "Should identify 3 created documents");
     assert_eq!(updated, 0, "Should not identify any updated documents");
@@ -79,7 +81,7 @@ async fn test_created_documents_various_data_types() -> Result<()> {
     ];
 
     let (created, updated, deleted, sample_updated, sample_created, sample_deleted) =
-        compare_documents(docs_before, docs_after, "id")?;
+        compare_documents(docs_before, docs_after, "id", 5, DiffStrategy::All)?;
 
     assert_eq!(created, 4, "Should identify 4 created documents");
     assert_eq!(updated, 0, "Should not identify any updated documents");
