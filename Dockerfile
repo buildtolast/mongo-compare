@@ -19,7 +19,7 @@ RUN apk add --no-cache curl
 # Copy built React UI
 COPY --from=ui-builder /app/mongo-diff-ui/dist /usr/share/nginx/html
 
-# Copy pre-built Rust backend binary
+# Copy pre-built Rust backend binary (Linux x86-64)
 COPY target/release/mongo-compare-server /usr/local/bin/
 
 # Create nginx config that proxies /api to Rust backend on port 3001
