@@ -12,7 +12,7 @@ COPY mongo-diff-ui/ ./
 RUN npm run build
 
 # Build stage for Rust backend
-FROM rust:1.80-alpine AS rust-builder
+FROM rust:1.82-alpine AS rust-builder
 
 WORKDIR /app
 
