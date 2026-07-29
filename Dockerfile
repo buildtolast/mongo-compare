@@ -11,28 +11,6 @@ COPY mongo-diff-ui/ ./
 
 RUN npm run build
 
-# Build stage for Rust backend
-FROM rust:1.82-alpine AS rust-builder
-
-WORKDIR /app
-
-COPY Cargo.toml Cargo.lock ./
-
-RUN mkdir -p src && \
-    echo 'pub mod comparison; pub mod config; pub mod mongo; pub mod output; pub mod types;' > src/lib.rs && \
-    echo 'fn main() {}' > src/main.rs
-
-COPY src/comparison.rs src/
-COPY src/config.rs src/
-COPY src/mongo.rs src/
-COPY src/output.rs src/
-COPY src/types.rs src/
-COPY src/server.rs src/
-
-RUN apk add --no-cache musl-dev openssl-dev
-
-RUN cargo build --release --bin mongo-compare-server
-
 # Production stage
 FROM nginx:alpine
 
@@ -41,8 +19,8 @@ RUN apk add --no-cache curl
 # Copy built React UI
 COPY --from=ui-builder /app/mongo-diff-ui/dist /usr/share/nginx/html
 
-# Copy Rust backend binary
-COPY --from=rust-builder /app/target/release/mongo-compare-server /usr/local/bin/
+# Copy pre-built Rust backend binary
+COPY target/release/mongo-compare-server /usr/local/bin/
 
 # Create nginx config that proxies /api to Rust backend on port 3001
 RUN echo 'server { \
