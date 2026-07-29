@@ -2,6 +2,7 @@ use actix_cors::Cors;
 use actix_web::{web, App, HttpServer, HttpResponse};
 use anyhow::Result as AnyResult;
 use futures_util::stream::StreamExt;
+use futures_util::TryStreamExt;
 use mongodb::bson::{doc, Document};
 use mongo_compare::{
     comparison::compare_documents,
@@ -175,19 +176,22 @@ async fn run_comparison(
             }
         };
 
-        let mut source_cursor = source_coll.find(doc! {}).await.unwrap();
-        let mut target_cursor = target_coll.find(doc! {}).await.unwrap();
+        let source_cursor = source_coll.find(doc! {}).await.unwrap();
+        let target_cursor = target_coll.find(doc! {}).await.unwrap();
 
-        while source_cursor.has_next() {
-            if let Ok(doc) = source_cursor.deserialize_current() {
+        let source_docs: Result<Vec<_>, _> = source_cursor.try_collect().await;
+        let target_docs: Result<Vec<_>, _> = target_cursor.try_collect().await;
+
+        if let Ok(docs) = source_docs {
+            for doc in docs {
                 if let Ok(doc_value) = serde_json::to_value(doc) {
                     all_source_docs.push(doc_value);
                 }
             }
         }
 
-        while target_cursor.has_next() {
-            if let Ok(doc) = target_cursor.deserialize_current() {
+        if let Ok(docs) = target_docs {
+            for doc in docs {
                 if let Ok(doc_value) = serde_json::to_value(doc) {
                     all_target_docs.push(doc_value);
                 }
