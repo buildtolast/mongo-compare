@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MongoDB Compare - Feature Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        h1 {
+            font-size: 3em;
+            margin-bottom: 15px;
+            background: linear-gradient(90deg, #00d4ff, #00a8ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            font-size: 1.2em;
+            color: #8892b0;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .demo-video {
+            position: relative;
+            width: 100%;
+            max-width: 1000px;
+            margin: 40px auto;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        .video-player {
+            width: 100%;
+            height: auto;
+            display: block;
+            background: #000;
+        }
+        
+        .demo-steps {
+            margin-top: 60px;
+        }
+        
+        .step {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 25px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .step:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        .step-number {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #00d4ff, #00a8ff);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 40px;
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+        
+        .step h3 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: #00d4ff;
+        }
+        
+        .step p {
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: #c5c6c7;
+            margin-bottom: 15px;
+        }
+        
+        .step ul {
+            list-style: none;
+            padding-left: 20px;
+        }
+        
+        .step li {
+            margin-bottom: 10px;
+            padding-left: 20px;
+            position: relative;
+            font-size: 1em;
+            color: #c5c6c7;
+        }
+        
+        .step li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #00d4ff;
+            font-weight: bold;
+        }
+        
+        .api-endpoints {
+            margin-top: 60px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 30px;
+        }
+        
+        .api-endpoints h2 {
+            font-size: 2em;
+            margin-bottom: 30px;
+            color: #00d4ff;
+        }
+        
+        .endpoint {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            font-family: 'Monaco', 'Consolas', monospace;
+        }
+        
+        .endpoint-method {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 0.9em;
+        }
+        
+        .endpoint-method.get { background: #00d4ff; color: #000; }
+        .endpoint-method.post { background: #00a8ff; color: #fff; }
+        
+        .endpoint-path {
+            color: #00d4ff;
+            font-weight: bold;
+        }
+        
+        .endpoint-desc {
+            color: #c5c6c7;
+            margin-left: 20px;
+            font-size: 0.9em;
+        }
+        
+        .demo-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 50px;
+        }
+        
+        .btn {
+            padding: 15px 35px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(90deg, #00d4ff, #00a8ff);
+            color: #fff;
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #00d4ff;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            padding: 30px;
+            color: #8892b0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            h1 { font-size: 2em; }
+            .demo-container { padding: 20px; }
+            .demo-buttons { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <header>
+            <h1>MongoDB Compare</h1>
+            <p class="subtitle">Compare MongoDB databases with ease - detect inserted, updated, and deleted documents across collections</p>
+        </header>
+        
+        <div class="demo-video">
+            <video class="video-player" controls poster="https://via.placeholder.com/1000x563/1a1a2e/00d4ff?text=MongoDB+Compare+Demo">
+                <source src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" type="video/mp4">
+                <source src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm" type="video/webm">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+        
+        <div class="demo-steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3>Start the Application</h3>
+                <p>Run MongoDB Compare using Docker Compose to get started quickly.</p>
+                <ul>
+                    <li>Ensure Docker and Docker Compose are installed</li>
+                    <li>Navigate to the project directory</li>
+                    <li>Run <code>docker-compose up -d</code> to start all services</li>
+                    <li>Wait for containers to be ready (30-60 seconds)</li>
+                    <li>Access the UI at <a href="http://localhost:80" style="color: #00d4ff;">http://localhost:80</a></li>
+                </ul>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3>Navigate the Dashboard</h3>
+                <p>The dashboard provides an intuitive interface for database comparison.</p>
+                <ul>
+                    <li><strong>Header</strong>: Application title and navigation</li>
+                    <li><strong>Connection Form</strong>: Enter MongoDB connection strings</li>
+                    <li><strong>Database Selector</strong>: Choose source and target databases</li>
+                    <li><strong>Collection Selector</strong>: Select collections to compare</li>
+                    <li><strong>Settings</strong>: Configure comparison options</li>
+                </ul>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3>Configure Connection</h3>
+                <p>Set up your MongoDB connections for comparison.</p>
+                <ul>
+                    <li>Enter Source Connection String: <code>mongodb://localhost:27017</code></li>
+                    <li>Enter Target Connection String: <code>mongodb://localhost:27017</code></li>
+                    <li>For Docker deployments: <code>mongodb://mongo:27017</code></li>
+                    <li>Click "Test Connection" to verify connectivity</li>
+                </ul>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">4</div>
+                <h3>Select Databases & Collections</h3>
+                <p>Choose which databases and collections to compare.</p>
+                <ul>
+                    <li>Select Source Database from the dropdown</li>
+                    <li>Select Target Database (can be same as source)</li>
+                    <li>Choose collections to compare from the list</li>
+                    <li>Multiple collections can be selected for batch comparison</li>
+                    <li>Identifier Field: Usually <code>_id</code> or custom unique field</li>
+                </ul>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">5</div>
+                <h3>Run Comparison</h3>
+                <p>Execute the comparison and view results.</p>
+                <ul>
+                    <li>Click "Run Comparison" button</li>
+                    <li>Wait for comparison to complete (depends on collection size)</li>
+                    <li>View summary: Created, Updated, Deleted counts</li>
+                    <li>Expand details to see specific document differences</li>
+                    <li>Use sample limit to control result size</li>
+                </ul>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">6</div>
+                <h3>Interpret Results</h3>
+                <p>Understand the comparison results and take action.</p>
+                <ul>
+                    <li><strong>Created</strong>: Documents in target but not in source</li>
+                    <li><strong>Updated</strong>: Documents with different field values</li>
+                    <li><strong>Deleted</strong>: Documents in source but not in target</li>
+                    <li>Click "View Details" to see field-level differences</li>
+                    <li>Export results for documentation or reporting</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="api-endpoints">
+            <h2>API Endpoints</h2>
+            <p style="color: #8892b0; margin-bottom: 20px;">The application provides a REST API for programmatic access</p>
+            
+            <div class="endpoint">
+                <span class="endpoint-method post">POST</span>
+                <span class="endpoint-path">/api/test-connection</span>
+                <span class="endpoint-desc">Test MongoDB connection string validity</span>
+                <div style="margin-top: 10px; font-size: 0.9em; color: #a0a0a0;">
+                    <code>{ "connection_string": "mongodb://localhost:27017" }</code>
+                </div>
+            </div>
+            
+            <div class="endpoint">
+                <span class="endpoint-method post">POST</span>
+                <span class="endpoint-path">/api/get-databases</span>
+                <span class="endpoint-desc">List all databases on the MongoDB server</span>
+                <div style="margin-top: 10px; font-size: 0.9em; color: #a0a0a0;">
+                    <code>{ "connection_string": "mongodb://localhost:27017" }</code>
+                </div>
+            </div>
+            
+            <div class="endpoint">
+                <span class="endpoint-method post">POST</span>
+                <span class="endpoint-path">/api/get-collections</span>
+                <span class="endpoint-desc">List collections in a specific database</span>
+                <div style="margin-top: 10px; font-size: 0.9em; color: #a0a0a0;">
+                    <code>{ "connection_string": "mongodb://localhost:27017", "database": "test" }</code>
+                </div>
+            </div>
+            
+            <div class="endpoint">
+                <span class="endpoint-method post">POST</span>
+                <span class="endpoint-path">/api/run-comparison</span>
+                <span class="endpoint-desc">Compare collections between databases</span>
+                <div style="margin-top: 10px; font-size: 0.9em; color: #a0a0a0;">
+                    <code>{ "source_connection_string": "...", "target_connection_string": "...", "database": "sourcedb", "target_database": "targetdb", "collections": ["users"], "identifier_field": "_id" }</code>
+                </div>
+            </div>
+        </div>
+        
+        <div class="demo-buttons">
+            <a href="http://localhost:80" class="btn btn-primary">Launch Demo Application</a>
+            <a href="https://github.com/buildtolast/mongo-compare" class="btn btn-secondary" target="_blank">View on GitHub</a>
+        </div>
+        
+        <div class="footer">
+            <p>MongoDB Compare v0.1.0 | Built with React & Rust | Docker Ready</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">© 2026 MongoDB Compare Project</p>
+        </div>
+    </div>
+</body>
+</html>
