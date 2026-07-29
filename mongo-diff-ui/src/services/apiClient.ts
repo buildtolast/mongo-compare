@@ -70,7 +70,7 @@ export interface RunComparisonResponse {
   result: ComparisonResult
 }
 
-const API_BASE_URL = 'http://localhost:8080'
+const API_BASE_URL = 'http://localhost:3001'
 
 const apiRequest = async <T, R>(endpoint: string, body: T): Promise<R> => {
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {

@@ -44,7 +44,7 @@ COPY --from=ui-builder /app/mongo-diff-ui/dist /usr/share/nginx/html
 # Copy Rust backend binary
 COPY --from=rust-builder /app/target/release/mongo-compare-server /usr/local/bin/
 
-# Create nginx config that proxies /api to Rust backend on port 8080
+# Create nginx config that proxies /api to Rust backend on port 3001
 RUN echo 'server { \
     listen 80; \
     server_name localhost; \
@@ -56,7 +56,7 @@ RUN echo 'server { \
     } \
     \
     location /api { \
-        proxy_pass http://127.0.0.1:8080; \
+        proxy_pass http://127.0.0.1:3001; \
         proxy_http_version 1.1; \
         proxy_set_header Upgrade $http_upgrade; \
         proxy_set_header Connection "upgrade"; \
@@ -67,5 +67,5 @@ RUN echo 'server { \
 
 EXPOSE 80
 
-# Start Rust backend on port 8080, then nginx on port 80
+# Start Rust backend on port 3001, then nginx on port 80
 CMD ["/bin/sh", "-c", "/usr/local/bin/mongo-compare-server & nginx -g 'daemon off;'"]

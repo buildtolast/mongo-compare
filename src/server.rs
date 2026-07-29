@@ -257,7 +257,7 @@ async fn main() -> AnyResult<()> {
             .route("/api/get-collections", web::post().to(get_collections))
             .route("/api/run-comparison", web::post().to(run_comparison))
     })
-    .bind("0.0.0.0:8080")?
+    .bind("0.0.0.0:3001")?
     .run()
     .await?;
 
