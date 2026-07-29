@@ -373,6 +373,7 @@ fn json_eq(a: &JsonValue, b: &JsonValue) -> bool {
         (JsonValue::Bool(a), JsonValue::Bool(b)) => a == b,
         (JsonValue::Array(a), JsonValue::Array(b)) => a == b,
         (JsonValue::Object(a), JsonValue::Object(b)) => a == b,
+        (JsonValue::Null, JsonValue::Null) => true,
         _ => false,
     }
 }

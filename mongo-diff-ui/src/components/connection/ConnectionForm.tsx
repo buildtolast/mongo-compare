@@ -7,6 +7,7 @@ import type { ConnectionState, ConnectionAction } from '@/contexts/ConnectionCon
 interface ConnectionFormProps {
   state: ConnectionState
   dispatch: React.Dispatch<ConnectionAction>
+  onConnect: (connectionType: 'source' | 'target') => Promise<void>
 }
 
 interface FormErrors {
@@ -38,7 +39,7 @@ function isPositiveNumber(value: string): boolean {
   return !isNaN(num) && num > 0
 }
 
-export function ConnectionForm({ state, dispatch }: ConnectionFormProps) {
+export function ConnectionForm({ state, dispatch, onConnect }: ConnectionFormProps) {
   const [errors, setErrors] = useState<FormErrors>({})
   const [isSourceTesting, setIsSourceTesting] = useState(false)
   const [isTargetTesting, setIsTargetTesting] = useState(false)
@@ -158,9 +159,9 @@ export function ConnectionForm({ state, dispatch }: ConnectionFormProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          connectionString: url.toString(),
-          config,
-        }),
+           connection_string: url.toString(),
+           config,
+         }),
       })
 
       if (response.ok) {
@@ -241,16 +242,43 @@ export function ConnectionForm({ state, dispatch }: ConnectionFormProps) {
     alert('Snapshot saved successfully!')
   }
 
+  const quickConnect = (type: 'source' | 'target') => {
+    dispatch({
+      type: type === 'source' ? 'SET_SOURCE' : 'SET_TARGET',
+      payload: {
+        connectionString: 'mongodb://localhost:27017',
+        database: type === 'source' ? 'sourcedb' : 'targetdb',
+        username: '',
+        password: '',
+        authDatabase: 'admin',
+        tls: false,
+        poolSize: 10,
+        connectTimeoutMS: 30000,
+        socketTimeoutMS: 30000,
+        serverSelectionTimeoutMS: 30000,
+      },
+    })
+  }
+
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <div className="rounded-xl border border-slate-700 bg-slate-800 p-6">
-          <h2 className="mb-4 text-lg font-semibold text-emerald-400">Source Configuration</h2>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="relative overflow-hidden rounded-2xl border border-slate-700 bg-slate-800 p-6 transition-all hover:border-emerald-500/30 hover:shadow-lg hover:shadow-emerald-500/5">
+          <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-emerald-500 to-teal-500" />
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-emerald-400">Source Database</h2>
+            <button
+              onClick={() => quickConnect('source')}
+              className="text-xs font-medium text-emerald-500 hover:text-emerald-400 transition-colors"
+            >
+              Use defaults
+            </button>
+          </div>
 
           <div className="space-y-4">
             <Input
               id="source-connection-string"
-              label="Source Connection String"
+              label="Connection String"
               placeholder="mongodb://localhost:27017"
               value={state.source.connectionString}
               onChange={(e) => handleInputChange(e, 'sourceConnectionString', 'source')}
@@ -259,8 +287,8 @@ export function ConnectionForm({ state, dispatch }: ConnectionFormProps) {
 
             <Input
               id="source-database"
-              label="Source Database"
-              placeholder="testdb"
+              label="Database Name"
+              placeholder="sourcedb"
               value={state.source.database}
               onChange={(e) => handleInputChange(e, 'sourceDatabase', 'source')}
               error={errors.sourceDatabase}
@@ -311,7 +339,7 @@ export function ConnectionForm({ state, dispatch }: ConnectionFormProps) {
                 />
                 <Input
                   id="source-connect-timeout"
-                  label="Connect Timeout (ms)"
+                  label="Connect Timeout"
                   type="number"
                   placeholder="30000"
                   value={state.source.connectTimeoutMS?.toString() || ''}
@@ -320,7 +348,7 @@ export function ConnectionForm({ state, dispatch }: ConnectionFormProps) {
                 />
                 <Input
                   id="source-socket-timeout"
-                  label="Socket Timeout (ms)"
+                  label="Socket Timeout"
                   type="number"
                   placeholder="30000"
                   value={state.source.socketTimeoutMS?.toString() || ''}
@@ -329,7 +357,7 @@ export function ConnectionForm({ state, dispatch }: ConnectionFormProps) {
                 />
                 <Input
                   id="source-server-selection-timeout"
-                  label="Server Selection (ms)"
+                  label="Server Selection"
                   type="number"
                   placeholder="30000"
                   value={state.source.serverSelectionTimeoutMS?.toString() || ''}
@@ -341,13 +369,22 @@ export function ConnectionForm({ state, dispatch }: ConnectionFormProps) {
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-700 bg-slate-800 p-6">
-          <h2 className="mb-4 text-lg font-semibold text-emerald-400">Target Configuration</h2>
+        <div className="relative overflow-hidden rounded-2xl border border-slate-700 bg-slate-800 p-6 transition-all hover:border-cyan-500/30 hover:shadow-lg hover:shadow-cyan-500/5">
+          <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-cyan-500 to-blue-500" />
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-cyan-400">Target Database</h2>
+            <button
+              onClick={() => quickConnect('target')}
+              className="text-xs font-medium text-cyan-500 hover:text-cyan-400 transition-colors"
+            >
+              Use defaults
+            </button>
+          </div>
 
           <div className="space-y-4">
             <Input
               id="target-connection-string"
-              label="Target Connection String"
+              label="Connection String"
               placeholder="mongodb://localhost:27018"
               value={state.target.connectionString}
               onChange={(e) => handleInputChange(e, 'targetConnectionString', 'target')}
@@ -356,8 +393,8 @@ export function ConnectionForm({ state, dispatch }: ConnectionFormProps) {
 
             <Input
               id="target-database"
-              label="Target Database"
-              placeholder="testdb"
+              label="Database Name"
+              placeholder="targetdb"
               value={state.target.database}
               onChange={(e) => handleInputChange(e, 'targetDatabase', 'target')}
               error={errors.targetDatabase}
@@ -408,7 +445,7 @@ export function ConnectionForm({ state, dispatch }: ConnectionFormProps) {
                 />
                 <Input
                   id="target-connect-timeout"
-                  label="Connect Timeout (ms)"
+                  label="Connect Timeout"
                   type="number"
                   placeholder="30000"
                   value={state.target.connectTimeoutMS?.toString() || ''}
@@ -417,7 +454,7 @@ export function ConnectionForm({ state, dispatch }: ConnectionFormProps) {
                 />
                 <Input
                   id="target-socket-timeout"
-                  label="Socket Timeout (ms)"
+                  label="Socket Timeout"
                   type="number"
                   placeholder="30000"
                   value={state.target.socketTimeoutMS?.toString() || ''}
@@ -426,7 +463,7 @@ export function ConnectionForm({ state, dispatch }: ConnectionFormProps) {
                 />
                 <Input
                   id="target-server-selection-timeout"
-                  label="Server Selection (ms)"
+                  label="Server Selection"
                   type="number"
                   placeholder="30000"
                   value={state.target.serverSelectionTimeoutMS?.toString() || ''}
@@ -434,89 +471,161 @@ export function ConnectionForm({ state, dispatch }: ConnectionFormProps) {
                   error={errors.serverSelectionTimeoutMS}
                 />
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
+             </div>
+           </div>
+         </div>
 
-      <div className="rounded-xl border border-slate-700 bg-slate-800 p-6">
-        <h2 className="mb-4 text-lg font-semibold text-emerald-400">Security & Connection Settings</h2>
+         <div className="flex gap-3 pt-4 border-t border-slate-700">
+           <Button
+             variant={state.sourceConnected ? "success" : "primary"}
+             size="sm"
+             onClick={() => onConnect('source')}
+             disabled={state.sourceConnected}
+           >
+             {state.sourceConnected ? (
+               <>
+                 <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                 </svg>
+                 Connected
+               </>
+             ) : (
+               <>
+                 <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                 </svg>
+                 Connect Source
+               </>
+             )}
+           </Button>
+           <Button
+             variant={state.targetConnected ? "success" : "primary"}
+             size="sm"
+             onClick={() => onConnect('target')}
+             disabled={state.targetConnected}
+           >
+             {state.targetConnected ? (
+               <>
+                 <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                 </svg>
+                 Connected
+               </>
+             ) : (
+               <>
+                 <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                 </svg>
+                 Connect Target
+               </>
+             )}
+           </Button>
+         </div>
+       </div>
+
+       <div className="rounded-2xl border border-slate-700 bg-slate-800 p-6">
+         <h2 className="mb-4 text-lg font-semibold text-slate-200">Security Settings</h2>
         <div className="space-y-4">
           <Checkbox
             id="enable-tls"
-            label="Enable TLS/SSL"
+            label="Enable TLS/SSL for both connections"
             checked={state.source.tls || false}
             onChange={(checked) => handleCheckboxChange(checked, 'tls')}
           />
-          <div className="flex items-center space-x-6">
-            <div className="flex items-center space-x-2">
+          <div className="flex flex-wrap items-center gap-6">
+            <div className="flex items-center gap-3 rounded-lg bg-slate-900/50 px-4 py-2">
               <div
                 className={`h-3 w-3 rounded-full ${
-                  state.sourceConnected ? 'bg-emerald-500' : 'bg-rose-500'
-                }`}
+                  state.sourceConnected ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]' : 'bg-rose-500'
+                }`} // Add shadow for glow effect
               />
-              <span className="text-sm text-slate-300">
-                Source status: {state.sourceConnected ? 'Connected' : 'Disconnected'}
+              <span className="text-sm font-medium text-slate-300">
+                Source: {state.sourceConnected ? 'Connected' : 'Disconnected'}
               </span>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-3 rounded-lg bg-slate-900/50 px-4 py-2">
               <div
                 className={`h-3 w-3 rounded-full ${
-                  state.targetConnected ? 'bg-emerald-500' : 'bg-rose-500'
+                  state.targetConnected ? 'bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.6)]' : 'bg-rose-500'
                 }`}
               />
-              <span className="text-sm text-slate-300">
-                Target status: {state.targetConnected ? 'Connected' : 'Disconnected'}
+              <span className="text-sm font-medium text-slate-300">
+                Target: {state.targetConnected ? 'Connected' : 'Disconnected'}
               </span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-700 bg-slate-800 p-6">
-        <div className="flex items-center space-x-4">
-          <Button
-            variant="success"
-            size="md"
-            isLoading={isSourceTesting}
-            onClick={handleTestSourceConnection}
-          >
-            Test Source Connection
-          </Button>
-          <Button
-            variant="success"
-            size="md"
-            isLoading={isTargetTesting}
-            onClick={handleTestTargetConnection}
-          >
-            Test Target Connection
-          </Button>
-        </div>
-        <div className="flex items-center space-x-4">
-          {testResults.source && (
-            <span
-              className={`text-sm ${
-                testResults.source.success ? 'text-emerald-400' : 'text-rose-400'
-              }`}
+      <div className="rounded-2xl border border-slate-700 bg-slate-800 p-6">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="success"
+              size="md"
+              isLoading={isSourceTesting}
+              onClick={handleTestSourceConnection}
             >
-              {testResults.source.message}
-            </span>
-          )}
-          {testResults.target && (
-            <span
-              className={`text-sm ${
-                testResults.target.success ? 'text-emerald-400' : 'text-rose-400'
-              }`}
+              <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              Test Source
+            </Button>
+            <Button
+              variant="success"
+              size="md"
+              isLoading={isTargetTesting}
+              onClick={handleTestTargetConnection}
             >
-              {testResults.target.message}
-            </span>
-          )}
+              <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              Test Target
+            </Button>
+          </div>
+          <div className="flex items-center gap-6">
+            {testResults.source && (
+              <span
+                className={`flex items-center text-sm font-medium ${
+                  testResults.source.success ? 'text-emerald-400' : 'text-rose-400'
+                }`}
+              >
+                <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  {testResults.source.success ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  )}
+                </svg>
+                {testResults.source.message}
+              </span>
+            )}
+            {testResults.target && (
+              <span
+                className={`flex items-center text-sm font-medium ${
+                  testResults.target.success ? 'text-cyan-400' : 'text-rose-400'
+                }`}
+              >
+                <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  {testResults.target.success ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  )}
+                </svg>
+                {testResults.target.message}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
       <div className="flex justify-end">
         <Button variant="primary" size="lg" onClick={handleSaveSnapshot}>
-          Save as Snapshot
+          <svg className="mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+          </svg>
+          Save Configuration
         </Button>
       </div>
     </div>

@@ -6,7 +6,7 @@ import { ConnectionProvider, useConnection } from '@/contexts/ConnectionContext'
 describe('ConnectionForm', () => {
   const TestComponent = () => {
     const { state, dispatch } = useConnection()
-    return <ConnectionForm state={state} dispatch={dispatch} />
+    return <ConnectionForm state={state} dispatch={dispatch} onConnect={async () => {}} />
   }
 
   beforeEach(() => {

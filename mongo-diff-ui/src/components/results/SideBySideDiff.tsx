@@ -72,13 +72,24 @@ export function SideBySideDiff({
     }
   }
 
-  const renderFieldValue = (value: unknown) => {
+  const   renderFieldValue = (value: unknown, showContext = true) => {
     if (value === undefined || value === null) {
       return <span className="text-slate-500 italic">null</span>
     }
     
     if (typeof value === 'object') {
-      return <pre className="text-xs text-slate-300 overflow-x-auto">{JSON.stringify(value, null, 2)}</pre>
+      const jsonString = JSON.stringify(value, null, 2)
+      const lines = jsonString.split('\n')
+      const maxLines = showContext ? 8 : 100
+      const truncated = lines.slice(0, maxLines).join('\n')
+      const isTruncated = lines.length > maxLines
+      
+      return (
+        <pre className="text-xs text-slate-300 overflow-x-auto">
+          {truncated}
+          {isTruncated && <span className="text-slate-600">...</span>}
+        </pre>
+      )
     }
     
     return <span className="font-mono text-sm">{String(value)}</span>
@@ -213,13 +224,13 @@ export function SideBySideDiff({
 }
 
 interface DocumentDiffViewProps {
-  document: DocumentDiff
-  viewMode: 'side-by-side' | 'unified'
-  expandedFields: Set<string>
-  onToggleExpand: (path: string) => void
-  renderFieldValue: (value: unknown) => React.ReactNode
-  getChangeColor: (type: 'added' | 'removed' | 'changed') => string
-}
+   document: DocumentDiff
+   viewMode: 'side-by-side' | 'unified'
+   expandedFields: Set<string>
+   onToggleExpand: (path: string) => void
+   renderFieldValue: (value: unknown, showContext?: boolean) => React.ReactNode
+   getChangeColor: (type: 'added' | 'removed' | 'changed') => string
+ }
 
 function DocumentDiffView({
   document,
@@ -285,21 +296,21 @@ function DocumentDiffView({
 
                 <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
                   {change.oldValue !== undefined && (
-                    <div className="space-y-1">
-                      <span className="text-xs text-slate-500">Old Value</span>
-                      <div className="rounded bg-rose-900/20 p-2">
-                        {renderFieldValue(change.oldValue)}
-                      </div>
-                    </div>
-                  )}
-                  {change.newValue !== undefined && (
-                    <div className="space-y-1">
-                      <span className="text-xs text-slate-500">New Value</span>
-                      <div className="rounded bg-emerald-900/20 p-2">
-                        {renderFieldValue(change.newValue)}
-                      </div>
-                    </div>
-                  )}
+                     <div className="space-y-1">
+                       <span className="text-xs text-slate-500">Old Value</span>
+                       <div className="rounded bg-rose-900/20 p-2 max-h-32 overflow-y-auto">
+                         {renderFieldValue(change.oldValue)}
+                       </div>
+                     </div>
+                   )}
+                   {change.newValue !== undefined && (
+                     <div className="space-y-1">
+                       <span className="text-xs text-slate-500">New Value</span>
+                       <div className="rounded bg-emerald-900/20 p-2 max-h-32 overflow-y-auto">
+                         {renderFieldValue(change.newValue)}
+                       </div>
+                     </div>
+                   )}
                 </div>
 
                 {hasNestedFields && expandedFields.has(change.path) && (

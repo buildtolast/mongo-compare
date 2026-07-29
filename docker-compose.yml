@@ -18,7 +18,7 @@ services:
     environment:
       - MONGO_INITDB_DATABASE=testdb
     volumes:
-      - mongo-data:/data/db
+      - ./test/fixtures:/docker-entrypoint-initdb.d
     networks:
       - mongo-compare-network
 
