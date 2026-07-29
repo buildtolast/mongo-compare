@@ -1,5 +1,7 @@
 import { useState, useCallback } from 'react'
 import { Button } from '@/components/common/Button'
+import type { MonitoringState } from '@/services/monitoringService'
+import { MonitoringStatus } from './MonitoringStatus'
 
 export interface SummaryStatsProps {
   result?: {
@@ -17,6 +19,7 @@ export interface SummaryStatsProps {
   onExport?: (format: 'json' | 'csv' | 'html') => void
   onRefresh?: () => void
   onMonitoringToggle?: (enabled: boolean) => void
+  monitoringState?: MonitoringState
 }
 
 export function SummaryStats({
@@ -26,6 +29,7 @@ export function SummaryStats({
   onExport,
   onRefresh,
   onMonitoringToggle,
+  monitoringState,
 }: SummaryStatsProps) {
   const [monitoringEnabled, setMonitoringEnabled] = useState(false)
 
@@ -233,6 +237,19 @@ export function SummaryStats({
           </Button>
         </div>
       </div>
+
+      {/* Real-time Monitoring Status */}
+      {monitoringState && (
+        <MonitoringStatus
+          monitoringState={monitoringState}
+          onToggle={(enabled) => {
+            setMonitoringEnabled(enabled)
+            onMonitoringToggle?.(enabled)
+          }}
+          onRefresh={onRefresh || (() => {})}
+          isLoading={isLoading}
+        />
+      )}
     </div>
   )
 }

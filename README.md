@@ -11,38 +11,37 @@ A Rust library and CLI tool for comparing MongoDB collections before and after c
 - **JSON Input**: Works with JSON arrays of documents, making it easy to integrate with MongoDB backups
 - **Batch Processing**: Supports configurable batch sizes for processing large collections
 
-## Quick Start
+## React UI - MongoDB Diff UI
 
-### CLI Usage
+A modern React-based web interface for MongoDB comparison with real-time monitoring capabilities.
+
+### Features
+
+- **Real-time Monitoring**: MongoDB Change Streams for detecting changes as they happen
+- **Interactive HTML Reports**: Side-by-side diff viewers with color-coded highlighting
+- **Export Options**: JSON, CSV, and HTML formats
+- **Snapshot Management**: Save and load comparison configurations
+- **Collection Discovery**: Browse and filter databases/collections
+- **Diff Strategies**: Multiple comparison modes (All, Whitelist, Blacklist, DeepEquality)
+
+### Quick Start
 
 ```bash
-cargo run -- --help
+cd mongo-diff-ui
+npm install
+npm run dev
 ```
 
-### Library Usage
+### Build
 
-```rust
-use mongo_compare::comparison::compare_documents;
-use serde_json::json;
-use anyhow::Result;
+```bash
+npm run build
+```
 
-let docs_before: Vec<serde_json::Value> = vec![
-    json!({"id": 1, "name": "Original", "nested": {"field": "old"}}),
-    json!({"id": 2, "name": "Original"}),
-];
+### Tests
 
-let docs_after: Vec<serde_json::Value> = vec![
-    json!({"id": 1, "name": "Updated", "nested": {"field": "new"}}),
-    json!({"id": 2, "name": "Updated"}),
-    json!({"id": 3, "name": "New"}),
-];
-
-let (created, updated, deleted, sample_updated, sample_created, sample_deleted) =
-    compare_documents(docs_before, docs_after, "id")?;
-
-println!("Created: {}", created);
-println!("Updated: {}", updated);
-println!("Deleted: {}", deleted);
+```bash
+npm test
 ```
 
 ## Architecture
@@ -135,6 +134,14 @@ mongo-compare/
 │   └── updated_documents_test.rs
 ├── docs/
 │   └── adr/            # Architecture decision records
+├── mongo-diff-ui/      # React web interface
+│   ├── src/
+│   │   ├── services/   # Business logic (DiffEngine, MongoDBClient, etc.)
+│   │   ├── components/ # React components
+│   │   ├── types/      # TypeScript types
+│   │   └── contexts/   # React contexts
+│   ├── tests/          # Test files
+│   └── package.json
 └── Cargo.toml
 ```
 
@@ -170,25 +177,57 @@ Key architectural decisions are recorded in `docs/adr/`:
 - `0003-dot-notation-paths.md` - Dot-notation for nested field paths
 - `0004-conservative-diffing.md` - Conservative diffing approach
 
+## Recent Work (2026-07-29)
+
+### Completed Features (Tickets 00-12)
+
+**Project Foundation & Core Services:**
+- Ticket 01: Project setup with Vite, React, TypeScript, testing infrastructure
+- Ticket 02: MongoDBClient service with connection pooling, TLS, authentication
+- Ticket 03: Connection Configuration UI with form validation
+- Ticket 04: Collection Discovery & Selection (DatabaseTree, CollectionList, CollectionDiscovery)
+- Ticket 05: Snapshot Management (save/load configurations, recurring comparisons)
+- Ticket 06: DiffEngine with multiple strategies (All, Whitelist, Blacklist, DeepEquality)
+- Ticket 07: Comparison Results Summary with statistics cards
+
+**Comparison & Visualization:**
+- Ticket 08: Side-by-Side Diff Viewer for document comparison
+- Ticket 09: Color-Coded Diff Viewer with green/red/yellow highlighting
+
+**Export Functionality:**
+- Ticket 10: JSON and CSV Export (ExportService)
+- Ticket 11: Interactive HTML Report Export with side-by-side viewers, filtering, sorting
+
+**Real-time Monitoring:**
+- Ticket 12: Real-time Monitoring with MongoDB Change Streams, reconnection logic, batch processing
+
+### Build & Test Status
+- ✅ All 285 tests passing
+- ✅ Build passing (vite build)
+- ✅ ESLint warnings only (no errors)
+
+### Files Added/Modified
+- `src/services/monitoringService.ts` - Real-time monitoring with Change Streams
+- `src/components/results/MonitoringStatus.tsx` - Monitoring UI component
+- Multiple test files for new services/components
+
 ## Future Enhancements
 
 Potential areas for future development:
 
 ### High Priority
-- MongoDB direct connection support
-- Custom diff strategies (deep equality, field whitelisting/blacklisting)
-- Configurable sample limits
 - Performance optimizations for very large collections
+- Real-time monitoring enhancements
+- Advanced export formats
+- Web build and deployment (Ticket 17)
 
 ### Medium Priority
 - Support for additional data types (dates, binaries, UUIDs)
-- Batch processing integration with MongoDB
-- Diff output formatting options (JSON, CSV, HTML)
 - Comparison result caching
+- Accessibility compliance (Ticket 14)
 
 ### Low Priority
 - Parallel comparison for very large collections
-- Comparison result visualization
 - Integration with CI/CD pipelines
 - Comparison result storage in database
 

@@ -3,3 +3,10 @@ export { SnapshotService } from './snapshotService.js'
 export { DiffEngine, DiffStrategy, type DiffEngineOptions } from './diffEngine.js'
 export { ExportService } from './exportService.js'
 export { HtmlReportService, type ReportStatistics } from './htmlReportService.js'
+export { 
+  MonitoringService, 
+  type MonitoringConfig, 
+  type MonitoringState, 
+  type ChangeEvent, 
+  type ChangeNotification 
+} from './monitoringService.js'

@@ -32,7 +32,7 @@ The process of choosing specific databases and collections from MongoDB instance
 The output format for comparison results, supporting JSON (raw structured data), CSV (tabular format), and HTML (interactive visual report with side-by-side viewers and color-coded highlighting).
 
 **Comparison Mode**:
-The operational模式 for comparisons — either one-time manual runs or continuous monitoring with real-time change detection and automatic diffing.
+The operational mode for comparisons — either one-time manual runs or continuous monitoring with real-time change detection and automatic diffing.
 
 **Batch Comparison**:
 The ability to compare multiple collection pairs in a single operation, either sequentially or in parallel, with shared configuration or per-pair customization.
@@ -130,3 +130,145 @@ Comparison result packaged in requested format (JSON, CSV, or HTML) with full di
 9. **Recurring Monitoring**: Schedule regular comparisons against a reference snapshot to detect unauthorized or unexpected changes.
 
 10. **Export for Analysis**: Generate comparison reports in CSV/HTML format for sharing with stakeholders or importing into analysis tools.
+
+## Deployment Architecture
+
+### Docker Compose Setup
+
+The application can be deployed using Docker Compose with three separate services:
+
+**1. React UI Service** (`mongo-diff-ui`)
+- Serves static React application via **nginx** (production) or Vite (development)
+- Connects to MongoDB instances via configurable environment variables
+- Port: 5173 (development) or 80 (production)
+- Nginx handles: gzip compression, cache headers, reverse proxy
+
+**2. Rust Backend Service** (`mongo-compare`)
+- Provides API endpoints for comparison operations via **actix-web** or **axum**
+- Connects to MongoDB for direct collection comparison
+- Serves static React files from `dist/` directory
+- Can be used for batch processing or scheduled comparisons
+
+**3. MongoDB Service**
+- Single or multiple MongoDB instances
+- Configurable via environment variables
+- Supports authentication, TLS, and connection pooling
+
+### Connection Configuration
+
+The React UI connects to MongoDB instances via:
+- **Environment variables**: `VITE_SOURCE_MONGODB_URI`, `VITE_TARGET_MONGODB_URI`
+- **Connection form**: Manual input of connection strings
+- **Snapshot loading**: Pre-saved configurations
+
+### MongoDB Deployment Scenarios
+
+The UI supports three scenarios for MongoDB deployment:
+
+**1. Same Instance, Different Collections** (Demo/Learning)
+- Source and target point to same MongoDB instance
+- Compare different collections with same schema
+- Example: `collection_before` vs `collection_after`
+
+**2. Same Instance, Same Collection** (Change Tracking)
+- Source and target point to same MongoDB instance
+- Compare same collection at different points in time
+- Requires timestamp-based filtering
+
+**3. Different Instances** (Production)
+- Source and target point to different MongoDB instances
+- Compare production vs staging, primary vs replica
+- Full flexibility for cross-instance comparison
+
+### Connection Configuration
+
+The React UI connects to MongoDB instances via:
+- **Environment variables**: `VITE_MONGODB_URI`, `VITE_MONGODB_DB`, etc.
+- **Connection form**: Manual input of connection strings
+- **Snapshot loading**: Pre-saved configurations
+
+### Nginx Configuration
+
+The React UI uses nginx to serve static files with:
+- Gzip compression for faster loading
+- Cache headers for performance
+- Reverse proxy for API endpoints (if needed)
+- Custom error pages
+
+### Usage Scenarios
+
+1. **Demo/Learning**: Run all three services locally with Docker Compose
+2. **Production**: Deploy UI to cloud, connect to managed MongoDB (MongoDB Atlas, etc.)
+3. **CI/CD**: Use Rust CLI for automated comparisons in pipelines
+
+## Rust Backend Configuration
+
+The Rust backend uses **actix-web** or **axum** to:
+- Serve static React files from `dist/` directory
+- Provide API endpoints for comparison operations
+- Handle authentication and security
+- Support health check and metrics endpoints
+
+## Nginx Configuration
+
+The React UI uses nginx to serve static files with:
+- Gzip compression for faster loading
+- Cache headers for performance
+- Reverse proxy for API endpoints (if needed)
+- Custom error pages
+
+## Recent Work (2026-07-29)
+
+### Completed Features (Tickets 00-12)
+
+**Project Foundation & Core Services:**
+- Ticket 01: Project setup with Vite, React, TypeScript, testing infrastructure
+- Ticket 02: MongoDBClient service with connection pooling, TLS, authentication
+- Ticket 03: Connection Configuration UI with form validation
+- Ticket 04: Collection Discovery & Selection (DatabaseTree, CollectionList, CollectionDiscovery)
+- Ticket 05: Snapshot Management (save/load configurations, recurring comparisons)
+- Ticket 06: DiffEngine with multiple strategies (All, Whitelist, Blacklist, DeepEquality)
+- Ticket 07: Comparison Results Summary with statistics cards
+
+**Comparison & Visualization:**
+- Ticket 08: Side-by-Side Diff Viewer for document comparison
+- Ticket 09: Color-Coded Diff Viewer with green/red/yellow highlighting
+
+**Export Functionality:**
+- Ticket 10: JSON and CSV Export (ExportService)
+- Ticket 11: Interactive HTML Report Export with side-by-side viewers, filtering, sorting
+
+**Real-time Monitoring:**
+- Ticket 12: Real-time Monitoring with MongoDB Change Streams, reconnection logic, batch processing
+
+### Build & Test Status
+- ✅ All 285 tests passing
+- ✅ Build passing (vite build)
+- ✅ ESLint warnings only (no errors)
+
+### Files Added/Modified
+- `src/services/monitoringService.ts` - Real-time monitoring with Change Streams
+- `src/components/results/MonitoringStatus.tsx` - Monitoring UI component
+- Multiple test files for new services/components
+
+## Resume Point
+
+**Next Priority: Ticket 13 — Performance Optimization**
+
+This ticket focuses on:
+- Optimizing large collection comparisons
+- Memory-efficient streaming
+- Parallel processing improvements
+- Caching strategies
+
+**Alternative Resume Points:**
+- Ticket 14: Accessibility Compliance (WCAG 2.1 AA)
+- Ticket 15: Testing Suite (E2E tests, integration testing)
+
+### How to Resume
+
+If you want to continue from a specific ticket, just say:
+- "Resume from ticket 13" (Performance Optimization)
+- "Resume from ticket 14" (Accessibility Compliance)
+- "Resume from ticket 15" (Testing Suite)
+- Or specify any other ticket number

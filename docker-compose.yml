@@ -1,0 +1,30 @@
+services:
+  mongo-diff:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+      - "8080:8080"
+    depends_on:
+      - mongo
+    networks:
+      - mongo-compare-network
+
+  mongo:
+    image: mongo:7.0
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=testdb
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - mongo-compare-network
+
+networks:
+  mongo-compare-network:
+    driver: bridge
+
+volumes:
+  mongo-data:
