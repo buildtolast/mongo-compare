@@ -88,6 +88,7 @@ pub struct Config {
     pub output_file: String,
     pub sample_limit: usize,
     pub diff_strategy: DiffStrategy,
+    pub target_database: Option<String>,
 }
 
 #[derive(Debug, Serialize)]

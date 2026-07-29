@@ -117,6 +117,7 @@ struct RunComparisonRequest {
     source_connection_string: String,
     target_connection_string: String,
     database: String,
+    target_database: Option<String>,
     collections: Vec<String>,
     identifier_field: String,
     sample_limit: usize,
@@ -166,7 +167,7 @@ async fn run_comparison(
             }
         };
 
-        let target_coll = match get_collection(&target_client, &req.database, collection).await {
+        let target_coll = match get_collection(&target_client, req.target_database.as_ref().unwrap_or(&req.database), collection).await {
             Ok(c) => c,
             Err(e) => {
                 return HttpResponse::BadRequest().json(serde_json::json!({
