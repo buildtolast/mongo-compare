@@ -298,6 +298,25 @@ If you want to continue from a specific ticket, just say:
 4. Submit
 5. Reference the issue number in commits/docs
 
+## Issue Numbering
+
+GitHub issues use sequential numbering across all issues (open + closed). When issues are closed or deleted, their numbers may not be reused immediately, creating gaps in the sequence.
+
+**Current issue numbers:**
+- **Completed tickets (01-13):** Closed issues #34-#20 (various numbers)
+- **Review/Validation issues (14-18, 20-28):** Open issues #36-#44 (various numbers)
+- **End-to-end implementation (new):** Open issues #45-#47
+
+**Issue numbers are NOT sequential** (e.g., gap between #28 and #45) because:
+- Some issues were created, reviewed, and closed
+- GitHub doesn't reuse issue numbers
+- New issues continue from the next available number
+
+**To find the latest issue number:** Check the GitHub Issues tab or run:
+```bash
+gh issue list --state open --json number | jq '.[0].number'
+```
+
 **To close an issue:**
 - Mark as "won't do" with reason if not relevant
 - Link to duplicate issue if applicable
