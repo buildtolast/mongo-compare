@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  mongo-test:
+    image: mongo:7.0
+    container_name: mongo-compare-test-mongo
+    ports:
+      - "27018:27017"
+    environment:
+      MONGO_INITDB_DATABASE: test
+    volumes:
+      - ./test/fixtures:/docker-entrypoint-initdb.d
+    networks:
+      - mongo-compare-test-network
+
+  mongo-compare-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mongo-compare-test-app
+    ports:
+      - "81:80"
+      - "3002:3001"
+    depends_on:
+      - mongo-test
+    environment:
+      - MONGODB_URI=mongodb://mongo-test:27017
+    networks:
+      - mongo-compare-test-network
+
+networks:
+  mongo-compare-test-network:
+    driver: bridge
