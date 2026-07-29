@@ -272,3 +272,33 @@ If you want to continue from a specific ticket, just say:
 - "Resume from ticket 14" (Accessibility Compliance)
 - "Resume from ticket 15" (Testing Suite)
 - Or specify any other ticket number
+
+## GitHub Issues Policy
+
+**All issues must be created in GitHub Issues tab, NOT as markdown files.**
+
+- **Never create `.scratch/mongo-diff-ui/issues/*.md` files for active work**
+- **All tickets (01-28) must exist as GitHub Issues with proper tracking**
+- **Use GitHub Issues tab for:**
+  - Task tracking
+  - Progress monitoring
+  - Assignment
+  - Labels (priority, status, blocked, etc.)
+  - Comments and discussions
+  - Linking related issues
+- **Markdown issue files are only for:**
+  - Historical/archived work
+  - ADRs (Architectural Decision Records)
+  - Documentation references
+
+**To create a new issue:**
+1. Go to GitHub Issues tab
+2. Click "New issue"
+3. Fill in title, description, labels, assignee
+4. Submit
+5. Reference the issue number in commits/docs
+
+**To close an issue:**
+- Mark as "won't do" with reason if not relevant
+- Link to duplicate issue if applicable
+- Include resolution notes in comment
