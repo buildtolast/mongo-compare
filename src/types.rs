@@ -106,13 +106,13 @@ pub struct ComparisonResult {
     pub sample_deleted: Vec<JsonValue>,
 }
 
-#[derive(Debug, Serialize, PartialEq)]
+#[derive(Debug, Serialize, PartialEq, Clone)]
 pub struct DocumentDiff {
     pub identifier: String,
     pub changed_fields: Vec<ChangedField>,
 }
 
-#[derive(Debug, Serialize, PartialEq)]
+#[derive(Debug, Serialize, PartialEq, Clone)]
 pub struct ChangedField {
     pub field_name: String,
     pub old_value: String,

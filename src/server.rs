@@ -196,8 +196,8 @@ async fn run_comparison(
     }
 
     match compare_documents(
-        all_source_docs,
-        all_target_docs,
+        all_source_docs.clone(),
+        all_target_docs.clone(),
         &req.identifier_field,
         req.sample_limit,
         req.diff_strategy.clone(),
@@ -213,9 +213,9 @@ async fn run_comparison(
                 created_count: created,
                 updated_count: updated,
                 deleted_count: deleted,
-                sample_created,
-                sample_updated,
-                sample_deleted,
+                sample_created: sample_created.clone(),
+                sample_updated: sample_updated.clone(),
+                sample_deleted: sample_deleted.clone(),
             };
 
             HttpResponse::Ok().json(RunComparisonResponse {
