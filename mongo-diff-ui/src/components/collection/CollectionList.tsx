@@ -164,18 +164,29 @@ export function CollectionList({
                 <label className="block text-sm font-medium text-slate-300">
                   Identifier Field
                 </label>
-                <select
-                  value={identifierField}
-                  onChange={handleIdentifierChange}
-                  className="block w-full rounded-lg border border-slate-600 bg-slate-800 py-2 px-3 text-slate-100 focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm"
-                  data-testid="identifier-select"
-                >
-                  {COMMON_IDENTIFIER_FIELDS.map((field) => (
-                    <option key={field} value={field}>
-                      {field}
-                    </option>
-                  ))}
-                </select>
+                <div className="space-y-1">
+                  <select
+                    value={identifierField}
+                    onChange={handleIdentifierChange}
+                    className="block w-full rounded-lg border border-slate-600 bg-slate-800 py-2 px-3 text-slate-100 focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm"
+                    data-testid="identifier-select"
+                  >
+                    {COMMON_IDENTIFIER_FIELDS.map((field) => (
+                      <option key={field} value={field}>
+                        {field}
+                      </option>
+                    ))}
+                  </select>
+                  <Input
+                    placeholder="Or type custom field name..."
+                    value={identifierField}
+                    onChange={(e) => onIdentifierChange(e.target.value)}
+                    data-testid="identifier-custom-input"
+                  />
+                  <p className="text-xs text-slate-500">
+                    Choose from common fields or type a custom field name that uniquely identifies documents
+                  </p>
+                </div>
               </div>
 
               <div className="space-y-1">

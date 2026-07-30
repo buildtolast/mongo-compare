@@ -70,10 +70,10 @@ export interface RunComparisonResponse {
   result: ComparisonResult
 }
 
-const API_BASE_URL = 'http://localhost:3001'
+const API_BASE_URL = '/api'
 
 const apiRequest = async <T, R>(endpoint: string, body: T): Promise<R> => {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const response = await fetch(API_BASE_URL + endpoint, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

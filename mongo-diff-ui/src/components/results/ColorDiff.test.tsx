@@ -1,37 +1,7 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { describe, it, expect } from 'vitest'
+import { render, screen } from '@testing-library/react'
 import { ColorDiff } from './ColorDiff'
-import type { DocumentDiff, ChangedField, ComparisonResult } from '@/types'
-
-const mockDocumentDiff: DocumentDiff = {
-  identifier: 'doc-001',
-  changes: [
-    {
-      path: 'name',
-      oldValue: 'John Doe',
-      newValue: 'Jane Doe',
-      type: 'changed' as const,
-    },
-    {
-      path: 'email',
-      oldValue: 'john@example.com',
-      newValue: 'jane@example.com',
-      type: 'changed' as const,
-    },
-    {
-      path: 'phone',
-      oldValue: undefined,
-      newValue: '555-1234',
-      type: 'added' as const,
-    },
-    {
-      path: 'address',
-      oldValue: '123 Main St',
-      newValue: undefined,
-      type: 'removed' as const,
-    },
-  ],
-}
+import type { DocumentDiff, ComparisonResult } from '@/types'
 
 const mockComparisonResult: ComparisonResult = {
   timestamp: new Date().toISOString(),

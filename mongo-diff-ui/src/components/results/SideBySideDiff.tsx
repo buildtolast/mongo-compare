@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 import { Tabs, TabList, Tab, TabPanel } from '@/components/common/Tabs'
 import { Button } from '@/components/common/Button'
-import type { ChangedField, DocumentDiff } from '@/types'
+import type { DocumentDiff } from '@/types'
 
 export interface ComparisonResult {
   timestamp: string
@@ -9,25 +9,23 @@ export interface ComparisonResult {
   targetInstance: string
   sourceDatabase: string
   targetDatabase: string
-  created: { count: number; samples: Record<string, unknown>[] }
+  created: { count: number; samples: unknown[] }
   updated: { count: number; samples: DocumentDiff[] }
-  deleted: { count: number; samples: Record<string, unknown>[] }
+  deleted: { count: number; samples: unknown[] }
 }
 
 export interface SideBySideDiffProps {
   result?: ComparisonResult
-  isLoading?: boolean
   error?: string
   onDocumentChange?: (index: number) => void
 }
 
 export function SideBySideDiff({
   result,
-  isLoading = false,
   error,
   onDocumentChange,
 }: SideBySideDiffProps) {
-  const [viewMode, setViewMode] = useState<'side-by-side' | 'unified'>('side-by-side')
+  const [viewMode] = useState<'side-by-side' | 'unified'>('side-by-side')
   const [expandedFields, setExpandedFields] = useState<Set<string>>(new Set())
   const [currentPage, setCurrentPage] = useState(0)
   const itemsPerPage = 10
@@ -151,7 +149,7 @@ export function SideBySideDiff({
             <p className="text-slate-400">No updated documents found</p>
           </div>
         ) : (
-          paginatedDocs.map((doc, index) => (
+          paginatedDocs.map((doc) => (
             <DocumentDiffView
               key={doc.identifier}
               document={doc}
@@ -234,7 +232,6 @@ interface DocumentDiffViewProps {
 
 function DocumentDiffView({
   document,
-  viewMode,
   expandedFields,
   onToggleExpand,
   renderFieldValue,

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterAll } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import type { ComparisonResult, DocumentDiff } from '@/types'
 import { VirtualizedDiffList } from './VirtualizedDiffList.js'
 

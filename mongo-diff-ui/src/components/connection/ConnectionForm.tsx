@@ -246,7 +246,7 @@ export function ConnectionForm({ state, dispatch, onConnect }: ConnectionFormPro
     dispatch({
       type: type === 'source' ? 'SET_SOURCE' : 'SET_TARGET',
       payload: {
-        connectionString: 'mongodb://localhost:27017',
+        connectionString: 'mongodb://mongo:27017',
         database: type === 'source' ? 'sourcedb' : 'targetdb',
         username: '',
         password: '',
@@ -279,7 +279,7 @@ export function ConnectionForm({ state, dispatch, onConnect }: ConnectionFormPro
             <Input
               id="source-connection-string"
               label="Connection String"
-              placeholder="mongodb://localhost:27017"
+              placeholder="mongodb://mongo:27017"
               value={state.source.connectionString}
               onChange={(e) => handleInputChange(e, 'sourceConnectionString', 'source')}
               error={errors.sourceConnectionString}
@@ -385,7 +385,7 @@ export function ConnectionForm({ state, dispatch, onConnect }: ConnectionFormPro
             <Input
               id="target-connection-string"
               label="Connection String"
-              placeholder="mongodb://localhost:27018"
+              placeholder="mongodb://mongo:27017"
               value={state.target.connectionString}
               onChange={(e) => handleInputChange(e, 'targetConnectionString', 'target')}
               error={errors.targetConnectionString}

@@ -180,7 +180,7 @@ export class MonitoringService {
     this.pendingChanges = []
     
     if (this.batchTimer) {
-      clearTimeout(this.batchTimer as any)
+      clearTimeout(this.batchTimer as unknown as number)
       this.batchTimer = null
     }
     
@@ -219,7 +219,6 @@ export class MonitoringService {
       })
 
       ;(this.sourceStream as { on: (event: string, handler: () => void) => void }).on('close', () => {
-        console.log('Source change stream closed')
         this.handleStreamClose('source')
       })
     } catch (error) {
@@ -256,7 +255,6 @@ export class MonitoringService {
       })
 
       ;(this.targetStream as { on: (event: string, handler: () => void) => void }).on('close', () => {
-        console.log('Target change stream closed')
         this.handleStreamClose('target')
       })
     } catch (error) {
@@ -269,9 +267,9 @@ export class MonitoringService {
 
  async stopSourceChangeStream(): Promise<void> {
     if (this.sourceStream) {
-      for (const [, listener] of this.sourceChangeListeners) {
-        ;(this.sourceStream as { off: (event: string, handler: (change: ChangeEvent) => void) => void }).off('change', listener)
-      }
+for (const [, listener] of this.sourceChangeListeners) {
+         (this.sourceStream as { off: (event: string, handler: (change: ChangeEvent) => void) => void }).off('change', listener)
+       }
       this.sourceChangeListeners.clear()
       
       try {
@@ -286,9 +284,9 @@ export class MonitoringService {
 
 async stopTargetChangeStream(): Promise<void> {
     if (this.targetStream) {
-      for (const [, listener] of this.targetChangeListeners) {
-        ;(this.targetStream as { off: (event: string, handler: (change: ChangeEvent) => void) => void }).off('change', listener)
-      }
+for (const [, listener] of this.targetChangeListeners) {
+         (this.targetStream as { off: (event: string, handler: (change: ChangeEvent) => void) => void }).off('change', listener)
+       }
       this.targetChangeListeners.clear()
       
       try {
@@ -343,9 +341,9 @@ async stopTargetChangeStream(): Promise<void> {
   }
 
   private scheduleBatchProcessing(): void {
-    if (this.batchTimer) {
-      clearTimeout(this.batchTimer as any)
-    }
+if (this.batchTimer) {
+       clearTimeout(this.batchTimer as unknown as number)
+     }
     
     this.batchTimer = setTimeout(() => {
       if (this.changeBatch.length > 0) {
@@ -355,7 +353,7 @@ async stopTargetChangeStream(): Promise<void> {
   }
 
   private logChange(stream: 'source' | 'target', change: ChangeEvent): void {
-    console.log(`[${stream}] Change detected:`, {
+    console.log(`[${stream}] Change detected`, {
       operation: change.operationType,
       documentKey: change.documentKey,
       ns: change.ns,
@@ -411,7 +409,6 @@ async stopTargetChangeStream(): Promise<void> {
     
     if (this.reconnectionAttempts < this.maxReconnectionAttempts) {
       this.reconnectionAttempts++
-      console.log(`[${stream}] Reconnection attempt ${this.reconnectionAttempts}/${this.maxReconnectionAttempts}`)
       
       this.reconnectionTimer = setTimeout(() => {
         this.reconnectStream(stream).catch((reconnectError) => {
@@ -432,8 +429,6 @@ async stopTargetChangeStream(): Promise<void> {
   }
 
   private handleStreamClose(stream: 'source' | 'target'): void {
-    console.log(`[${stream}] Stream closed, attempting reconnection...`)
-    
     if (this.isMonitoring && this.reconnectionAttempts < this.maxReconnectionAttempts) {
       this.reconnectionAttempts++
       
@@ -447,16 +442,15 @@ async stopTargetChangeStream(): Promise<void> {
 
   private async reconnectStream(stream: 'source' | 'target'): Promise<void> {
     if (stream === 'source') {
-      await this.stopSourceChangeStream()
-      await this.startSourceChangeStream('mongodb://localhost:27017')
-    } else {
-      await this.stopTargetChangeStream()
-      await this.startTargetChangeStream('mongodb://localhost:27018')
-    }
-    
-    this.reconnectionAttempts = 0
-    console.log(`[${stream}] Reconnected successfully`)
-  }
+await this.stopSourceChangeStream()
+       await this.startSourceChangeStream('mongodb://localhost:27017')
+     } else {
+       await this.stopTargetChangeStream()
+       await this.startTargetChangeStream('mongodb://localhost:27018')
+     }
+     
+     this.reconnectionAttempts = 0
+   }
 
   notify(notification: ChangeNotification): void {
     for (const [, listener] of this.notificationListeners) {

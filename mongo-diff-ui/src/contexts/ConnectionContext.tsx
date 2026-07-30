@@ -19,11 +19,11 @@ export type ConnectionAction =
 
 const initialState: ConnectionState = {
   source: {
-    connectionString: 'mongodb://localhost:27017',
+    connectionString: 'mongodb://mongo:27017',
     username: '',
     password: '',
     authDatabase: 'admin',
-    database: 'testdb',
+    database: 'sourcedb',
     tls: false,
     poolSize: 10,
     connectTimeoutMS: 30000,
@@ -31,11 +31,11 @@ const initialState: ConnectionState = {
     serverSelectionTimeoutMS: 30000,
   },
   target: {
-    connectionString: 'mongodb://localhost:27018',
+    connectionString: 'mongodb://mongo:27017',
     username: '',
     password: '',
     authDatabase: 'admin',
-    database: 'testdb',
+    database: 'targetdb',
     tls: false,
     poolSize: 10,
     connectTimeoutMS: 30000,

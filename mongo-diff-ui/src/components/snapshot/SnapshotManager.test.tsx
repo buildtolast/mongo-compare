@@ -1,17 +1,12 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { SnapshotManager } from './SnapshotManager'
-import { ConnectionProvider, useConnection } from '@/contexts/ConnectionContext'
+import { ConnectionProvider } from '@/contexts/ConnectionContext'
 
 describe('SnapshotManager', () => {
   const TestComponent = () => {
-    const { state } = useConnection()
     return <SnapshotManager />
   }
-
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
 
   it('renders save button', () => {
     render(

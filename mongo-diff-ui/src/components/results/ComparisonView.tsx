@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useConnection } from '@/contexts/ConnectionContext'
 import { Button } from '@/components/common/Button'
 import { SummaryStats } from '@/components/results/SummaryStats'
@@ -18,9 +18,9 @@ interface RustComparisonResult {
     created_count: number
     updated_count: number
     deleted_count: number
-    sample_created: any[]
-    sample_updated: any[]
-    sample_deleted: any[]
+    sample_created: unknown[]
+    sample_updated: unknown[]
+    sample_deleted: unknown[]
   }
 }
 
@@ -41,20 +41,20 @@ interface ComparisonResult {
   sourceInstance: string
   targetInstance: string
   sourceDatabase: string
-  targetDatabase: string
-  created: { count: number; samples: any[] }
-  updated: { count: number; samples: DocumentDiff[] }
-  deleted: { count: number; samples: any[] }
-}
+   targetDatabase: string
+   created: { count: number; samples: unknown[] }
+   updated: { count: number; samples: DocumentDiff[] }
+   deleted: { count: number; samples: unknown[] }
+ }
 
 function transformRustComparison(rustResult: RustComparisonResult): ComparisonResult {
   const now = new Date().toISOString()
   
-  const transformUpdated = (samples: any[]): DocumentDiff[] => {
-    return samples.map((doc: any) => ({
+  const transformUpdated = (samples: { identifier?: string; changed_fields?: { field_name: string; old_value: string; new_value: string }[] }[]): DocumentDiff[] => {
+    return samples.map((doc) => ({
       identifier: doc.identifier || '',
-      changes: (doc.changed_fields || []).map((field: RustChangedField) => ({
-        path: field.field_name || '',
+      changes: (doc.changed_fields || []).map((field) => ({
+        path: field.field_name,
         oldValue: field.old_value,
         newValue: field.new_value,
         type: field.old_value === 'null' ? 'added' : field.new_value === 'null' ? 'removed' : 'changed'
@@ -70,15 +70,15 @@ function transformRustComparison(rustResult: RustComparisonResult): ComparisonRe
     targetDatabase: 'targetdb',
     created: {
       count: rustResult.result.created_count || 0,
-      samples: rustResult.result.sample_created || []
+      samples: rustResult.result.sample_created as unknown[]
     },
     updated: {
       count: rustResult.result.updated_count || 0,
-      samples: transformUpdated(rustResult.result.sample_updated || [])
+      samples: transformUpdated(rustResult.result.sample_updated as { identifier?: string; changed_fields?: { field_name: string; old_value: string; new_value: string }[] }[])
     },
     deleted: {
       count: rustResult.result.deleted_count || 0,
-      samples: rustResult.result.sample_deleted || []
+      samples: rustResult.result.sample_deleted as unknown[]
     }
   }
 }

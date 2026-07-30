@@ -23,7 +23,7 @@ export interface ComparisonResult {
   deleted: { count: number; samples: Record<string, unknown>[] }
 }
 
-export function transformRustComparison(rustResult: any): ComparisonResult {
+export function transformRustComparison(rustResult: { source_database?: string; target_database?: string; created_count?: number; sample_created?: Record<string, unknown>[]; updated_count?: number; sample_updated?: { identifier?: string; changed_fields?: { field_name: string; old_value: string; new_value: string }[] }[]; deleted_count?: number; sample_deleted?: Record<string, unknown>[] }): ComparisonResult {
   const now = new Date().toISOString()
   
   return {
@@ -47,11 +47,11 @@ export function transformRustComparison(rustResult: any): ComparisonResult {
   }
 }
 
-function transformUpdatedDocuments(sampleUpdated: any[]): DocumentDiff[] {
-  return sampleUpdated.map((doc: any) => ({
+function transformUpdatedDocuments(sampleUpdated: { identifier?: string; changed_fields?: { field_name: string; old_value: string; new_value: string }[] }[]): DocumentDiff[] {
+  return sampleUpdated.map((doc) => ({
     identifier: doc.identifier || '',
-    changes: doc.changed_fields?.map((field: RustChangedField) => ({
-      path: field.field_name || '',
+    changes: doc.changed_fields?.map((field) => ({
+      path: field.field_name,
       oldValue: field.old_value,
       newValue: field.new_value,
       type: field.old_value === null ? 'added' : field.new_value === null ? 'removed' : 'changed'

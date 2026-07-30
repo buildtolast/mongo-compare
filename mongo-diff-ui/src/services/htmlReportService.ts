@@ -773,7 +773,7 @@ export class HtmlReportService {
   generateDiffSection(title: string, type: string, samples: unknown[], badgeType: string): string {
     return `<div class="diff-section">
   <div class="diff-section-title">${title}</div>
-  ${samples.map((sample, index) => this.generateDiffItem(sample, badgeType)).join('')}
+  ${samples.map((sample, _index) => this.generateDiffItem(sample, badgeType)).join('')}
 </div>`
   }
 

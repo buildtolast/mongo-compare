@@ -1,12 +1,10 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback } from 'react'
 import { Button } from '@/components/common/Button'
-import type { ChangedField, DocumentDiff, ComparisonResult } from '@/types'
+import type { DocumentDiff } from '@/types'
 
 export interface ColorDiffProps {
-  result?: ComparisonResult
-  isLoading?: boolean
+  result?: { timestamp: string; sourceInstance: string; targetInstance: string; sourceDatabase: string; targetDatabase: string; created: { count: number; samples: unknown[] }; updated: { count: number; samples: { identifier: string; changes: { path: string; oldValue: unknown; newValue: unknown; type: 'added' | 'removed' | 'changed' }[] }[] }; deleted: { count: number; samples: unknown[] } }
   error?: string
-  onDocumentChange?: (index: number) => void
 }
 
 const COLOR_SCHEME = {
@@ -32,9 +30,7 @@ const COLOR_SCHEME = {
 
 export function ColorDiff({
   result,
-  isLoading = false,
   error,
-  onDocumentChange,
 }: ColorDiffProps) {
   const [expandedFields, setExpandedFields] = useState<Set<string>>(new Set())
   const [currentPage, setCurrentPage] = useState(0)
@@ -56,17 +52,15 @@ export function ColorDiff({
   const handlePrevPage = useCallback(() => {
     if (currentPage > 0) {
       setCurrentPage((prev) => prev - 1)
-      onDocumentChange?.(currentPage - 1)
     }
-  }, [currentPage, onDocumentChange])
+  }, [currentPage])
 
   const handleNextPage = useCallback(() => {
     const totalPages = Math.ceil((result?.updated.count || 0) / itemsPerPage)
     if (currentPage < totalPages - 1) {
       setCurrentPage((prev) => prev + 1)
-      onDocumentChange?.(currentPage + 1)
     }
-  }, [currentPage, result?.updated.count, onDocumentChange])
+  }, [currentPage, result?.updated.count])
 
   const handleCopyToClipboard = useCallback((text: string) => {
     navigator.clipboard.writeText(text).then(() => {
@@ -203,7 +197,7 @@ export function ColorDiff({
             <p className="text-slate-400">No updated documents found</p>
           </div>
         ) : (
-          paginatedDocs.map((doc, index) => (
+          paginatedDocs.map((doc) => (
             <DocumentDiffView
               key={doc.identifier}
               document={doc}
@@ -306,7 +300,7 @@ function DocumentDiffView({
         {document.changes.map((change) => {
           const colors = getChangeColor(change.type)
           const isExpanded = expandedFields.has(change.path)
-          const copyText = `${change.path}: ${change.oldValue !== undefined ? String(change.oldValue) : 'null'} → ${change.newValue !== undefined ? String(change.newValue) : 'null'}`
+          const _copyText = `${change.path}: ${change.oldValue !== undefined ? String(change.oldValue) : 'null'} → ${change.newValue !== undefined ? String(change.newValue) : 'null'}`
 
           return (
             <div

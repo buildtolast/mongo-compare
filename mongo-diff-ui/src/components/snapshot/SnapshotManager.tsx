@@ -1,12 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/common/Button'
 import { Input } from '@/components/common/Input'
-import { Checkbox } from '@/components/common/Checkbox'
 import { SnapshotService } from '@/services/snapshotService'
 import type { Snapshot } from '@/types/snapshot'
-import { useConnection } from '@/contexts/ConnectionContext'
-import type { ConnectionConfig } from '@/types/connection'
-import type { CollectionSelector } from '@/types/collection'
+import type { ConnectionState } from '@/contexts/ConnectionContext'
 
 interface SnapshotManagerProps {
   onSaveSuccess?: () => void
@@ -14,7 +11,6 @@ interface SnapshotManagerProps {
 }
 
 export function SnapshotManager({ onSaveSuccess, snapshotService: propService }: SnapshotManagerProps) {
-  const { state } = useConnection()
   const snapshotServiceInstance = propService || new SnapshotService()
   
   const [snapshots, setSnapshots] = useState<Snapshot[]>([])
@@ -27,6 +23,13 @@ export function SnapshotManager({ onSaveSuccess, snapshotService: propService }:
   const [saveDescription, setSaveDescription] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [saveError, setSaveError] = useState<string | undefined>()
+  const state: ConnectionState = {
+    source: { connectionString: '', database: '', username: '', password: '', authDatabase: '', tls: false, poolSize: 10, connectTimeoutMS: 10000, socketTimeoutMS: 30000, serverSelectionTimeoutMS: 30000 },
+    target: { connectionString: '', database: '', username: '', password: '', authDatabase: '', tls: false, poolSize: 10, connectTimeoutMS: 10000, socketTimeoutMS: 30000, serverSelectionTimeoutMS: 30000 },
+    sourceConnected: false,
+    targetConnected: false,
+    databases: []
+  }
 
   useEffect(() => {
     loadSnapshots()
@@ -78,14 +81,13 @@ export function SnapshotManager({ onSaveSuccess, snapshotService: propService }:
     setIsLoading(true)
 
     try {
-      const { source, target } = snapshot.config
-      const sourceConnected = false
-      const targetConnected = false
+      const _source = snapshot.config.source
+      const _target = snapshot.config.target
+      const _sourceConnected = false
+      const _targetConnected = false
 
-      const dispatch = (action: any) => {
-        if (action.type === 'SET_SOURCE') {
-          // This would be called via context dispatch
-        }
+      const _dispatch = (_action: { type?: string }) => {
+        // This would be called via context dispatch
       }
 
       // We need to dispatch actions to update the connection context

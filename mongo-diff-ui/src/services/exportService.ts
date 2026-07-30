@@ -25,18 +25,18 @@ export class ExportService {
     }
 
     const allKeys = new Set<string>()
-    const flattenedSamples = samples.map((sample, index) => {
+    const flattenedSamples = samples.map((sample, _index) => {
       const flat = this.flattenObject(sample as Record<string, unknown>)
       for (const key of Object.keys(flat)) {
         allKeys.add(key)
       }
-      return { index, flat }
+      return { _index, flat }
     })
 
     const headers = Array.from(allKeys).sort()
     const headerRow = headers.join(',')
 
-    const dataRows = flattenedSamples.map(({ index, flat }) => {
+    const dataRows = flattenedSamples.map(({ _index, flat }) => {
       const row: string[] = []
       for (const key of headers) {
         const value = flat[key]

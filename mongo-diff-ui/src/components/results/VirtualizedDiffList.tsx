@@ -8,9 +8,9 @@ export interface ComparisonResult {
   targetInstance: string
   sourceDatabase: string
   targetDatabase: string
-  created: { count: number; samples: Record<string, unknown>[] }
+  created: { count: number; samples: unknown[] }
   updated: { count: number; samples: DocumentDiff[] }
-  deleted: { count: number; samples: Record<string, unknown>[] }
+  deleted: { count: number; samples: unknown[] }
 }
 
 export interface VirtualizedDiffListProps {

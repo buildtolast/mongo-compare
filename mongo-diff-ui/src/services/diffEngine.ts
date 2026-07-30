@@ -46,7 +46,7 @@ export class DiffEngine {
     for (const id of Object.keys(targetMap)) {
       const targetDoc = targetMap[id]
       
-      if (!sourceMap.hasOwnProperty(id)) {
+      if (!Object.prototype.hasOwnProperty.call(sourceMap, id)) {
         createdCount++
         if (sampleLimit === 0 || createdDocs.length < sampleLimit) {
           createdDocs.push(targetDoc)
