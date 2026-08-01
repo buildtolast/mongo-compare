@@ -74,7 +74,7 @@ pub fn compare_documents(
         }
     }
 
-    let after_ids: std::collections::HashSet<String> = docs_after
+    let after_ids: std::collections::BTreeSet<String> = docs_after
         .iter()
         .filter_map(|doc| doc.get(identifier_field).map(|id| id.to_string()))
         .collect();
@@ -114,10 +114,10 @@ pub fn find_field_diffs(
         DiffStrategy::All => {
             let before_obj = doc_before.as_object();
             let after_obj = doc_after.as_object().unwrap();
-            let before_keys: std::collections::HashSet<String> = before_obj
+            let before_keys: std::collections::BTreeSet<String> = before_obj
                 .map(|o| o.keys().cloned().collect())
                 .unwrap_or_default();
-            let after_keys: std::collections::HashSet<String> =
+            let after_keys: std::collections::BTreeSet<String> =
                 after_obj.keys().cloned().collect();
 
             for key in before_keys.union(&after_keys) {
@@ -236,10 +236,10 @@ pub fn find_field_diffs(
         DiffStrategy::Blacklist(fields) => {
             let before_obj = doc_before.as_object();
             let after_obj = doc_after.as_object().unwrap();
-            let before_keys: std::collections::HashSet<String> = before_obj
+            let before_keys: std::collections::BTreeSet<String> = before_obj
                 .map(|o| o.keys().cloned().collect())
                 .unwrap_or_default();
-            let after_keys: std::collections::HashSet<String> =
+            let after_keys: std::collections::BTreeSet<String> =
                 after_obj.keys().cloned().collect();
 
             for key in before_keys.union(&after_keys) {
@@ -306,10 +306,10 @@ pub fn find_field_diffs(
         DiffStrategy::DeepEquality => {
             let before_obj = doc_before.as_object();
             let after_obj = doc_after.as_object().unwrap();
-            let before_keys: std::collections::HashSet<String> = before_obj
+            let before_keys: std::collections::BTreeSet<String> = before_obj
                 .map(|o| o.keys().cloned().collect())
                 .unwrap_or_default();
-            let after_keys: std::collections::HashSet<String> =
+            let after_keys: std::collections::BTreeSet<String> =
                 after_obj.keys().cloned().collect();
 
             for key in before_keys.union(&after_keys) {
@@ -367,7 +367,7 @@ pub fn find_field_diffs(
         }
     }
 
-    let mut seen_fields: std::collections::HashSet<String> = std::collections::HashSet::new();
+    let mut seen_fields: std::collections::BTreeSet<String> = std::collections::BTreeSet::new();
     let mut deduplicated: Vec<ChangeField> = Vec::new();
 
     for field in changed_fields {
@@ -389,8 +389,8 @@ fn find_nested_diffs(
     result: &mut Vec<ChangeField>,
 ) -> anyhow::Result<()> {
     if let (JsonValue::Object(before_obj), JsonValue::Object(after_obj)) = (before, after) {
-        let before_keys: std::collections::HashSet<String> = before_obj.keys().cloned().collect();
-        let after_keys: std::collections::HashSet<String> = after_obj.keys().cloned().collect();
+        let before_keys: std::collections::BTreeSet<String> = before_obj.keys().cloned().collect();
+        let after_keys: std::collections::BTreeSet<String> = after_obj.keys().cloned().collect();
 
         for key in before_keys.union(&after_keys) {
             let mut new_path = path.clone();
