@@ -2,6 +2,7 @@ pub mod comparison;
 pub mod config;
 pub mod mongo;
 pub mod output;
+pub mod server_app;
 pub mod types;
 
 pub use comparison::{compare_documents, find_field_diffs};
