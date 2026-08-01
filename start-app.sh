@@ -59,32 +59,66 @@ log_verbose "Stopping existing containers..."
 docker-compose down 2>/dev/null || true
 echo "✓ Existing containers stopped"
 
-# Verify CSS build
-if ! ./check-css.sh > /dev/null 2>&1; then
-    echo "❌ CSS verification failed. Building UI..."
-    cd mongo-diff-ui && npm run build > /dev/null 2>&1
-    cd ..
-fi
-
 # Build and start the application
 echo "Building and starting MongoDB Compare..."
 if [[ "$DEBUG" == "true" ]]; then
-    docker-compose up -d --build 2>&1 | grep -v "WARNING" || true
+    docker-compose up -d --build
 else
-    docker-compose up -d --build > /dev/null 2>&1 || true
+    docker-compose up -d --build
 fi
 
-echo "Waiting for services to initialize (30 seconds)..."
+# Verify Docker build succeeded
+if [ $? -ne 0 ]; then
+    echo "❌ Docker build failed. Please check the logs above."
+    exit 1
+fi
+echo "✓ Docker build completed"
+
+# Wait for services to initialize
+echo "Waiting for services to initialize..."
 sleep 30
+
+# Verify containers are running
+log_verbose "Checking if containers are running..."
+if ! docker-compose ps | grep -q "Up"; then
+    echo "❌ Containers are not running. Please check the logs."
+    exit 1
+fi
+log_verbose "✓ Containers are running"
+
+# Verify health checks
+log_verbose "Checking service health..."
+
+# Check nginx is responding
+if ! curl -s http://localhost:80/health > /dev/null 2>&1; then
+    echo "❌ Nginx health check failed"
+    exit 1
+fi
+log_verbose "✓ Nginx is healthy"
+
+# Check MongoDB is responding
+if ! docker exec mongo-compare-mongo-1 mongosh --eval "db.adminCommand('ping')" > /dev/null 2>&1; then
+    echo "❌ MongoDB health check failed"
+    exit 1
+fi
+log_verbose "✓ MongoDB is healthy"
+
+# Check Rust backend is responding (backend now binds 127.0.0.1 only inside its
+# container, so check from inside the container rather than the host)
+if ! docker exec mongo-compare-mongo-diff-1 curl -s http://127.0.0.1:3001/health > /dev/null 2>&1; then
+    echo "❌ Backend health check failed"
+    exit 1
+fi
+log_verbose "✓ Backend is healthy"
 
 echo ""
 echo "=========================================="
 echo "MongoDB Compare is now running!"
 echo "=========================================="
 echo ""
-echo "🌐 Access the web application at: http://localhost:80"
-echo "📊 MongoDB is running on: localhost:27017"
-echo "🔧 MongoDB Compare API is running on: http://localhost:3001"
+echo "🌐 Web application: http://localhost:80"
+echo "📊 MongoDB: localhost:27017"
+echo "🔧 Backend API: http://localhost:80/api (proxied by nginx)"
 echo ""
-echo "To stop the application, run: docker-compose down"
+echo "To stop: docker-compose down"
 echo ""

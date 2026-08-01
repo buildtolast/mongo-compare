@@ -22,7 +22,7 @@ export function Input({
       {label && (
         <label
           htmlFor={inputId}
-          className="block text-sm font-medium text-slate-300"
+          className="block text-sm font-medium text-[var(--text-2)]"
         >
           {label}
         </label>
@@ -30,16 +30,16 @@ export function Input({
       <div className="relative rounded-md shadow-sm">
         {icon && (
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <span className="text-slate-400 sm:text-sm">{icon}</span>
+            <span className="text-[var(--text-muted)] sm:text-sm">{icon}</span>
           </div>
         )}
         <input
           id={inputId}
-          className={`block w-full rounded-lg border border-slate-600 bg-slate-800 py-2 px-3 text-slate-100 placeholder-slate-500 focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm ${icon ? 'pl-10' : ''} ${error ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500' : ''} ${className}`}
+          className={`block w-full rounded-lg border border-[var(--border)] bg-[var(--panel)] py-2 px-3 text-[var(--text)] placeholder-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-[var(--accent)] sm:text-sm ${icon ? 'pl-10' : ''} ${error ? 'border-[var(--danger)] focus:border-[var(--danger)] focus:ring-[var(--danger)]' : ''} ${className}`}
           {...props}
         />
       </div>
-      {error && <p className="text-xs text-rose-400">{error}</p>}
+      {error && <p className="text-xs text-[var(--danger)]">{error}</p>}
     </div>
   )
 }

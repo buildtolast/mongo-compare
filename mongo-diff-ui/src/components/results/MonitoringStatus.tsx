@@ -24,7 +24,7 @@ export function MonitoringStatus({
   }
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-700 bg-slate-800 p-4">
+    <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[var(--border)] bg-[var(--panel)] p-4">
       <div className="flex flex-wrap items-center gap-6">
         {/* Monitoring Toggle */}
         <div className="flex items-center space-x-2">
@@ -35,13 +35,13 @@ export function MonitoringStatus({
               checked={monitoringState.isMonitoring}
               onChange={(e) => onToggle(e.target.checked)}
             />
-            <div className="pointer-events-none peer h-6 w-11 rounded-full bg-slate-700 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-emerald-600 peer-checked:after:translate-x-full"></div>
-            <span className="ml-3 text-sm font-medium text-slate-300">Monitoring</span>
+            <div className="pointer-events-none peer h-6 w-11 rounded-full bg-[var(--border)] after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-[var(--accent-text)] after:transition-all after:content-[''] peer-checked:bg-[var(--accent)] peer-checked:after:translate-x-full"></div>
+            <span className="ml-3 text-sm font-medium text-[var(--text-2)]">Monitoring</span>
           </label>
         </div>
 
         {/* Last Update */}
-        <div className="flex items-center space-x-2 text-sm text-slate-400">
+        <div className="flex items-center space-x-2 text-sm text-[var(--text-muted)]">
           <svg
             className="h-4 w-4"
             fill="none"
@@ -62,19 +62,19 @@ export function MonitoringStatus({
         <div className="flex items-center space-x-2">
           <div
             className={`h-2.5 w-2.5 rounded-full ${
-              monitoringState.isConnected ? 'bg-emerald-500' : 'bg-rose-500'
+              monitoringState.isConnected ? 'bg-[var(--accent)]' : 'bg-[var(--danger)]'
             }`}
           />
-          <span className="text-sm text-slate-400">
+          <span className="text-sm text-[var(--text-muted)]">
             {monitoringState.isConnected ? 'Connected' : 'Disconnected'}
           </span>
         </div>
 
         {/* Change Count Badge */}
         {monitoringState.pendingChanges.length > 0 && (
-          <div className="flex items-center space-x-2 rounded-full bg-amber-900/30 px-3 py-1">
-            <div className="h-2 w-2 rounded-full bg-amber-500" />
-            <span className="text-sm font-medium text-amber-400">
+          <div className="flex items-center space-x-2 rounded-full bg-[var(--warn-bg)] px-3 py-1">
+            <div className="h-2 w-2 rounded-full bg-[var(--warn)]" />
+            <span className="text-sm font-medium text-[var(--warn)]">
               {monitoringState.pendingChanges.length} pending changes
             </span>
           </div>

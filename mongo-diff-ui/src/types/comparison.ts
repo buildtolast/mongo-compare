@@ -1,27 +1,38 @@
 import type { DocumentDiff } from './document.js'
 
 export interface ComparisonResult {
-  started_at: string
-  finished_at: string
-  collection_before: string
-  collection_after: string
+  timestamp: string
+  source_instance: string
+  target_instance: string
+  source_database: string
+  target_database: string
   total_before: number
   total_after: number
-  created_count: number
-  updated_count: number
-  deleted_count: number
-  sample_created: Record<string, unknown>[]
-  sample_updated: DocumentDiff[]
-  sample_deleted: Record<string, unknown>[]
+  created: CreatedDiff
+  updated: UpdatedDiff
+  deleted: DeletedDiff
 }
 
-export interface ChangedField {
-  field_name: string
-  old_value: string
-  new_value: string
+export interface CreatedDiff {
+  count: number
+  samples: Record<string, unknown>[]
 }
 
-export interface DocumentDiff {
-  identifier: string
-  changed_fields: ChangedField[]
+export interface UpdatedDiff {
+  count: number
+  samples: DocumentDiff[]
 }
+
+export interface DeletedDiff {
+  count: number
+  samples: Record<string, unknown>[]
+}
+
+export interface ChangeField {
+  path: string
+  old_value: string | undefined
+  new_value: string | undefined
+  type: 'added' | 'removed' | 'changed'
+}
+
+export type { DocumentDiff } from './document.js'

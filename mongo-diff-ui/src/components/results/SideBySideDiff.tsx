@@ -1,18 +1,9 @@
 import { useState, useCallback } from 'react'
 import { Tabs, TabList, Tab, TabPanel } from '@/components/common/Tabs'
 import { Button } from '@/components/common/Button'
-import type { DocumentDiff } from '@/types'
-
-export interface ComparisonResult {
-  timestamp: string
-  sourceInstance: string
-  targetInstance: string
-  sourceDatabase: string
-  targetDatabase: string
-  created: { count: number; samples: unknown[] }
-  updated: { count: number; samples: DocumentDiff[] }
-  deleted: { count: number; samples: unknown[] }
-}
+import { HtmlReportService } from '@/services/htmlReportService'
+import { ExportService } from '@/services/exportService'
+import type { ComparisonResult, DocumentDiff } from '@/types'
 
 export interface SideBySideDiffProps {
   result?: ComparisonResult
@@ -28,6 +19,7 @@ export function SideBySideDiff({
   const [viewMode] = useState<'side-by-side' | 'unified'>('side-by-side')
   const [expandedFields, setExpandedFields] = useState<Set<string>>(new Set())
   const [currentPage, setCurrentPage] = useState(0)
+  const [isExporting, setIsExporting] = useState(false)
   const itemsPerPage = 10
 
   const handleToggleExpand = useCallback((path: string) => {
@@ -57,22 +49,41 @@ export function SideBySideDiff({
     }
   }, [currentPage, result?.updated.count, onDocumentChange])
 
+  const handleExportHTML = async () => {
+    if (!result) return
+
+    setIsExporting(true)
+    try {
+      const htmlService = new HtmlReportService()
+      const { href } = htmlService.exportReport(result)
+
+      const link = document.createElement('a')
+      link.href = href
+      link.download = href.split('/').pop() || 'mongo-diff-report.html'
+      link.click()
+    } catch (err) {
+      console.error('Export failed:', err)
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
   const getChangeColor = (type: 'added' | 'removed' | 'changed') => {
     switch (type) {
       case 'added':
-        return 'text-emerald-400 bg-emerald-900/30'
+        return 'text-[var(--accent)] bg-[var(--add-bg)]'
       case 'removed':
-        return 'text-rose-400 bg-rose-900/30'
+        return 'text-[var(--danger)] bg-[var(--danger-bg)]'
       case 'changed':
-        return 'text-amber-400 bg-amber-900/30'
+        return 'text-[var(--warn)] bg-[var(--warn-bg)]'
       default:
-        return 'text-slate-400'
+        return 'text-[var(--text-muted)]'
     }
   }
 
   const   renderFieldValue = (value: unknown, showContext = true) => {
     if (value === undefined || value === null) {
-      return <span className="text-slate-500 italic">null</span>
+      return <span className="text-[var(--text-muted)] italic">null</span>
     }
     
     if (typeof value === 'object') {
@@ -83,9 +94,9 @@ export function SideBySideDiff({
       const isTruncated = lines.length > maxLines
       
       return (
-        <pre className="text-xs text-slate-300 overflow-x-auto">
+        <pre className="text-xs text-[var(--text-2)] overflow-x-auto">
           {truncated}
-          {isTruncated && <span className="text-slate-600">...</span>}
+          {isTruncated && <span className="text-[var(--text-muted)]">...</span>}
         </pre>
       )
     }
@@ -95,9 +106,9 @@ export function SideBySideDiff({
 
   if (!result) {
     return (
-      <div className="rounded-xl border border-slate-700 bg-slate-800 p-8 text-center">
-        <p className="text-slate-400">No comparison results available</p>
-        <p className="text-sm text-slate-500 mt-1">
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--panel)] p-8 text-center">
+        <p className="text-[var(--text-muted)]">No comparison results available</p>
+        <p className="text-sm text-[var(--text-muted)] mt-1">
           Run a comparison to see side-by-side document differences
         </p>
       </div>
@@ -113,18 +124,27 @@ export function SideBySideDiff({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-emerald-400">Document Differences</h2>
-        <div className="flex items-center space-x-2">
-          <span className="text-sm text-slate-400">
-            Showing {updatedDocs.length} of {result.updated.count} updated documents
-          </span>
-        </div>
-      </div>
+   <div className="flex items-center justify-between">
+         <div className="flex items-center space-x-2">
+           <Button
+             variant="secondary"
+             size="sm"
+             isLoading={isExporting}
+             onClick={handleExportHTML}
+           >
+             Export HTML Report
+           </Button>
+         </div>
+         <div className="flex items-center space-x-2">
+           <span className="text-sm text-[var(--text-muted)]">
+             Showing {updatedDocs.length} of {result.updated.count} updated documents
+           </span>
+         </div>
+       </div>
 
       {error && (
-        <div className="rounded-lg border border-rose-500/30 bg-rose-900/20 p-4">
-          <div className="flex items-center space-x-2 text-rose-400">
+        <div className="rounded-lg border border-[var(--danger)] bg-[var(--danger-bg)] p-4">
+          <div className="flex items-center space-x-2 text-[var(--danger)]">
             <svg
               className="h-5 w-5"
               fill="none"
@@ -145,8 +165,8 @@ export function SideBySideDiff({
 
       <div className="space-y-4">
         {paginatedDocs.length === 0 ? (
-          <div className="rounded-xl border border-slate-700 bg-slate-800 p-8 text-center">
-            <p className="text-slate-400">No updated documents found</p>
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--panel)] p-8 text-center">
+            <p className="text-[var(--text-muted)]">No updated documents found</p>
           </div>
         ) : (
           paginatedDocs.map((doc) => (
@@ -172,7 +192,7 @@ export function SideBySideDiff({
             >
               ← Previous
             </Button>
-            <span className="text-sm text-slate-400">
+            <span className="text-sm text-[var(--text-muted)]">
               Page {currentPage + 1} of {totalPages || 1}
             </span>
             <Button
@@ -194,24 +214,24 @@ export function SideBySideDiff({
         </TabList>
         <TabPanel id="side-by-side">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="rounded-lg border border-slate-700 bg-slate-800 p-4">
-              <h3 className="text-sm font-medium text-slate-300 mb-2">Source</h3>
-              <pre className="text-xs text-slate-400 overflow-x-auto">
+            <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4">
+              <h3 className="text-sm font-medium text-[var(--text-2)] mb-2">Source</h3>
+              <pre className="text-xs text-[var(--text-muted)] overflow-x-auto">
                 {JSON.stringify(result.created.samples[0] || {}, null, 2)}
               </pre>
             </div>
-            <div className="rounded-lg border border-slate-700 bg-slate-800 p-4">
-              <h3 className="text-sm font-medium text-slate-300 mb-2">Target</h3>
-              <pre className="text-xs text-slate-400 overflow-x-auto">
+            <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4">
+              <h3 className="text-sm font-medium text-[var(--text-2)] mb-2">Target</h3>
+              <pre className="text-xs text-[var(--text-muted)] overflow-x-auto">
                 {JSON.stringify(result.created.samples[0] || {}, null, 2)}
               </pre>
             </div>
           </div>
         </TabPanel>
         <TabPanel id="unified">
-          <div className="rounded-lg border border-slate-700 bg-slate-800 p-4">
-            <h3 className="text-sm font-medium text-slate-300 mb-2">Unified View</h3>
-            <pre className="text-xs text-slate-400 overflow-x-auto">
+          <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4">
+            <h3 className="text-sm font-medium text-[var(--text-2)] mb-2">Unified View</h3>
+            <pre className="text-xs text-[var(--text-muted)] overflow-x-auto">
               {JSON.stringify(result.created.samples[0] || {}, null, 2)}
             </pre>
           </div>
@@ -240,14 +260,14 @@ function DocumentDiffView({
   const hasNestedFields = document.changes.some((change) => change.path.includes('.'))
 
   return (
-    <div className="rounded-xl border border-slate-700 bg-slate-800 p-6">
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--panel)] p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-3">
-          <div className="rounded-lg bg-emerald-900/50 px-3 py-1 text-sm font-medium text-emerald-400">
+          <div className="rounded-lg bg-[var(--add-bg)] px-3 py-1 text-sm font-medium text-[var(--accent)]">
             ID: {document.identifier}
           </div>
         </div>
-        <div className="text-sm text-slate-500">
+        <div className="text-sm text-[var(--text-muted)]">
           {document.changes.length} changes
         </div>
       </div>
@@ -256,14 +276,14 @@ function DocumentDiffView({
         {document.changes.map((change) => (
           <div
             key={change.path}
-            className="rounded-lg border border-slate-700 bg-slate-900/50 p-4"
+            className="rounded-lg border border-[var(--border)] bg-[var(--panel-2)] p-4"
           >
             <div className="flex items-start space-x-3">
               <div className="mt-1">
                 {hasNestedFields && (
                   <button
                     onClick={() => onToggleExpand(change.path)}
-                    className="text-slate-400 hover:text-slate-200"
+                    className="text-[var(--text-muted)] hover:text-[var(--text-2)]"
                   >
                     <svg
                       className={`h-4 w-4 transition-transform ${
@@ -285,34 +305,34 @@ function DocumentDiffView({
               </div>
               <div className="flex-1 space-y-2">
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm font-medium text-slate-300">{change.path}</span>
+                  <span className="text-sm font-medium text-[var(--text-2)]">{change.path}</span>
                   <span className={`rounded px-2 py-0.5 text-xs font-medium ${getChangeColor(change.type)}`}>
                     {change.type}
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-                  {change.oldValue !== undefined && (
+                  {change.old_value !== undefined && (
                      <div className="space-y-1">
-                       <span className="text-xs text-slate-500">Old Value</span>
-                       <div className="rounded bg-rose-900/20 p-2 max-h-32 overflow-y-auto">
-                         {renderFieldValue(change.oldValue)}
+                       <span className="text-xs text-[var(--text-muted)]">Old Value</span>
+                       <div className="rounded bg-[var(--danger-bg)] p-2 max-h-32 overflow-y-auto">
+                         {renderFieldValue(change.old_value)}
                        </div>
                      </div>
                    )}
-                   {change.newValue !== undefined && (
+                   {change.new_value !== undefined && (
                      <div className="space-y-1">
-                       <span className="text-xs text-slate-500">New Value</span>
-                       <div className="rounded bg-emerald-900/20 p-2 max-h-32 overflow-y-auto">
-                         {renderFieldValue(change.newValue)}
+                       <span className="text-xs text-[var(--text-muted)]">New Value</span>
+                       <div className="rounded bg-[var(--add-bg)] p-2 max-h-32 overflow-y-auto">
+                         {renderFieldValue(change.new_value)}
                        </div>
                      </div>
                    )}
                 </div>
 
                 {hasNestedFields && expandedFields.has(change.path) && (
-                  <div className="mt-2 pl-4 border-l-2 border-slate-700">
-                    <p className="text-xs text-slate-400">
+                  <div className="mt-2 pl-4 border-l-2 border-[var(--border)]">
+                    <p className="text-xs text-[var(--text-muted)]">
                       Nested field content expanded
                     </p>
                   </div>

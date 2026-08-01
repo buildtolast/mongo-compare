@@ -545,19 +545,19 @@ export class HtmlReportService {
         </div>
         <div class="meta-item">
           <div class="meta-label">Source Instance</div>
-          <div class="meta-value">${result.sourceInstance}</div>
+          <div class="meta-value">${result.source_instance}</div>
         </div>
         <div class="meta-item">
           <div class="meta-label">Target Instance</div>
-          <div class="meta-value">${result.targetInstance}</div>
+          <div class="meta-value">${result.target_instance}</div>
         </div>
         <div class="meta-item">
           <div class="meta-label">Source Database</div>
-          <div class="meta-value">${result.sourceDatabase}</div>
+          <div class="meta-value">${result.source_database}</div>
         </div>
         <div class="meta-item">
           <div class="meta-label">Target Database</div>
-          <div class="meta-value">${result.targetDatabase}</div>
+          <div class="meta-value">${result.target_database}</div>
         </div>
       </div>
     </div>

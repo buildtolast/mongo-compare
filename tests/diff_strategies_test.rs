@@ -26,7 +26,7 @@ async fn test_diff_strategy_all() -> Result<()> {
     let field_names: Vec<String> = diff
         .changed_fields
         .iter()
-        .map(|f| f.field_name.clone())
+        .map(|f| f.path.clone())
         .collect();
 
     assert!(
@@ -64,7 +64,7 @@ async fn test_diff_strategy_whitelist() -> Result<()> {
     let field_names: Vec<String> = diff
         .changed_fields
         .iter()
-        .map(|f| f.field_name.clone())
+        .map(|f| f.path.clone())
         .collect();
 
     assert!(
@@ -149,7 +149,7 @@ async fn test_diff_strategy_blacklist() -> Result<()> {
     let field_names: Vec<String> = diff
         .changed_fields
         .iter()
-        .map(|f| f.field_name.clone())
+        .map(|f| f.path.clone())
         .collect();
 
     assert!(
@@ -230,7 +230,7 @@ async fn test_diff_strategy_deep_equality() -> Result<()> {
     let field_names: Vec<String> = diff
         .changed_fields
         .iter()
-        .map(|f| f.field_name.clone())
+        .map(|f| f.path.clone())
         .collect();
 
     assert!(
@@ -265,7 +265,7 @@ async fn test_diff_strategy_deep_equality_with_nested_change() -> Result<()> {
     let field_names: Vec<String> = diff
         .changed_fields
         .iter()
-        .map(|f| f.field_name.clone())
+        .map(|f| f.path.clone())
         .collect();
 
     assert!(

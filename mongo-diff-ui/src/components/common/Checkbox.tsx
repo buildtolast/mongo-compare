@@ -21,12 +21,12 @@ export function Checkbox({
         <input
           id={id}
           type="checkbox"
-          className={`h-5 w-5 cursor-pointer rounded border-slate-600 bg-slate-700 text-emerald-600 focus:ring-emerald-500 ${className}`}
+          className={`h-5 w-5 cursor-pointer rounded border-[var(--border)] bg-[var(--panel-2)] text-[var(--accent)] focus:ring-[var(--accent)] ${className}`}
           checked={checked}
           onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.target.checked)}
         />
       </div>
-      {label && <label htmlFor={id} className="text-sm text-slate-300">{label}</label>}
+      {label && <label htmlFor={id} className="text-sm text-[var(--text-2)]">{label}</label>}
     </div>
   )
 }

@@ -1,7 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react'
-import { vi } from 'vitest'
 import { DiffGroups } from './DiffGroups'
-import type { ChangedField } from '@/types/diff'
+import type { DocumentDiff } from '@/types/document'
 
 describe('DiffGroups', () => {
   const mockDeletedItem = {
@@ -18,12 +17,12 @@ describe('DiffGroups', () => {
     nested: null,
   }
 
-  const mockUpdatedItem = {
+  const mockUpdatedItem: DocumentDiff = {
     identifier: '401',
-    changed_fields: [
-      { field_name: 'name', old_value: 'User401', new_value: 'ExtraUser1' },
-      { field_name: 'age', old_value: '21', new_value: '25' },
-      { field_name: 'email', old_value: 'user401@test2.com', new_value: 'extra1@test.com' },
+    changes: [
+      { path: 'name', old_value: 'User401', new_value: 'ExtraUser1', type: 'changed' },
+      { path: 'age', old_value: '21', new_value: '25', type: 'changed' },
+      { path: 'email', old_value: 'user401@test2.com', new_value: 'extra1@test.com', type: 'changed' },
     ],
   }
 
@@ -44,8 +43,6 @@ describe('DiffGroups', () => {
         deletedItems={[mockDeletedItem]}
         updatedItems={[]}
         addedItems={[]}
-        onToggle={() => {}}
-        onExpand={() => {}}
       />
     )
     expect(screen.getByText(/DELETED/)).toBeInTheDocument()
@@ -61,8 +58,6 @@ describe('DiffGroups', () => {
         deletedItems={[]}
         updatedItems={[mockUpdatedItem]}
         addedItems={[]}
-        onToggle={() => {}}
-        onExpand={() => {}}
       />
     )
     expect(screen.getByText(/UPDATED/)).toBeInTheDocument()
@@ -78,8 +73,6 @@ describe('DiffGroups', () => {
         deletedItems={[]}
         updatedItems={[]}
         addedItems={[mockAddedItem]}
-        onToggle={() => {}}
-        onExpand={() => {}}
       />
     )
     expect(screen.getByText(/ADDED/)).toBeInTheDocument()
@@ -95,8 +88,6 @@ describe('DiffGroups', () => {
         deletedItems={[]}
         updatedItems={[]}
         addedItems={[]}
-        onToggle={() => {}}
-        onExpand={() => {}}
       />
     )
     expect(screen.getByText('Expand All ▼')).toBeInTheDocument()
@@ -111,8 +102,6 @@ describe('DiffGroups', () => {
         deletedItems={[]}
         updatedItems={[]}
         addedItems={[]}
-        onToggle={() => {}}
-        onExpand={() => {}}
       />
     )
     const expandBtn = screen.getByText('Expand All ▼')
@@ -131,15 +120,13 @@ describe('DiffGroups', () => {
         deletedItems={[]}
         updatedItems={[]}
         addedItems={[]}
-        onToggle={() => {}}
-        onExpand={() => {}}
       />
     )
     expect(screen.getByText(/No new documents added/)).toBeInTheDocument()
   })
 
   it('displays diff item with identifier and info', () => {
-    const { container } = render(
+    render(
       <DiffGroups
         deleted={1}
         updated={0}
@@ -147,8 +134,6 @@ describe('DiffGroups', () => {
         deletedItems={[mockDeletedItem]}
         updatedItems={[]}
         addedItems={[]}
-        onToggle={() => {}}
-        onExpand={() => {}}
       />
     )
     expect(screen.getByText('435')).toBeInTheDocument()
@@ -165,8 +150,6 @@ describe('DiffGroups', () => {
         deletedItems={[mockDeletedItem, mockDeletedItem]}
         updatedItems={[mockUpdatedItem, mockUpdatedItem]}
         addedItems={[mockAddedItem]}
-        onToggle={() => {}}
-        onExpand={() => {}}
       />
     )
     expect(screen.getByText(/DELETED/)).toBeInTheDocument()
@@ -175,46 +158,8 @@ describe('DiffGroups', () => {
     expect(container.querySelectorAll('.diff-item').length).toBe(4)
   })
 
-  it('calls onToggle when clicking toggle button', () => {
-    const onToggle = vi.fn()
-    const { container } = render(
-      <DiffGroups
-        deleted={1}
-        updated={0}
-        added={0}
-        deletedItems={[mockDeletedItem]}
-        updatedItems={[]}
-        addedItems={[]}
-        onToggle={onToggle}
-        onExpand={() => {}}
-      />
-    )
-    const toggleBtn = container.querySelector('.diff-item')
-    fireEvent.click(toggleBtn!)
-    expect(onToggle).toHaveBeenCalled()
-  })
-
-  it('calls onExpand when clicking expand button', () => {
-    const onExpand = vi.fn()
-    const { container } = render(
-      <DiffGroups
-        deleted={0}
-        updated={1}
-        added={0}
-        deletedItems={[]}
-        updatedItems={[mockUpdatedItem]}
-        addedItems={[]}
-        onToggle={() => {}}
-        onExpand={onExpand}
-      />
-    )
-    const expandBtn = container.querySelector('.expand-btn')
-    fireEvent.click(expandBtn!)
-    expect(onExpand).toHaveBeenCalled()
-  })
-
   it('displays field changes for updated items', () => {
-    const { container } = render(
+    render(
       <DiffGroups
         deleted={0}
         updated={1}
@@ -222,8 +167,6 @@ describe('DiffGroups', () => {
         deletedItems={[]}
         updatedItems={[mockUpdatedItem]}
         addedItems={[]}
-        onToggle={() => {}}
-        onExpand={() => {}}
       />
     )
     expect(screen.getByText('name: User401 → ExtraUser1')).toBeInTheDocument()

@@ -24,7 +24,7 @@ export function Tabs({
 }
 
 export function TabList({ children }: { children: ReactNode }) {
-  return <div className="flex border-b border-slate-700 space-x-1">{children}</div>
+  return <div className="flex border-b border-[var(--border)] space-x-1">{children}</div>
 }
 
 export function Tab({
@@ -43,8 +43,8 @@ export function Tab({
     <button
       className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
         context.activeTab === id
-          ? 'bg-slate-800 text-emerald-400 border-b-2 border-emerald-500'
-          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+          ? 'bg-[var(--panel)] text-[var(--accent)] border-b-2 border-[var(--accent)]'
+          : 'text-[var(--text-muted)] hover:text-[var(--text-2)] hover:bg-[var(--panel)]'
       } ${className}`}
       onClick={() => context.setActiveTab(id)}
     >

@@ -1,9 +1,9 @@
 import { useState, useCallback } from 'react'
 import { Button } from '@/components/common/Button'
-import type { DocumentDiff } from '@/types'
+import type { ComparisonResult, DocumentDiff } from '@/types'
 
 export interface ColorDiffProps {
-  result?: { timestamp: string; sourceInstance: string; targetInstance: string; sourceDatabase: string; targetDatabase: string; created: { count: number; samples: unknown[] }; updated: { count: number; samples: { identifier: string; changes: { path: string; oldValue: unknown; newValue: unknown; type: 'added' | 'removed' | 'changed' }[] }[] }; deleted: { count: number; samples: unknown[] } }
+  result?: ComparisonResult
   error?: string
 }
 
@@ -11,20 +11,20 @@ const COLOR_SCHEME = {
   added: {
     bg: '#d1fae5',
     text: '#065f46',
-    lightBg: 'bg-emerald-100',
-    lightText: 'text-emerald-800',
+    lightBg: 'bg-[var(--add-bg)]',
+    lightText: 'text-[var(--accent)]',
   },
   removed: {
     bg: '#fee2e2',
     text: '#991b1b',
-    lightBg: 'bg-rose-100',
-    lightText: 'text-rose-800',
+    lightBg: 'bg-[var(--danger-bg)]',
+    lightText: 'text-[var(--danger)]',
   },
   changed: {
     bg: '#fef3c7',
     text: '#92400e',
-    lightBg: 'bg-amber-100',
-    lightText: 'text-amber-800',
+    lightBg: 'bg-[var(--warn-bg)]',
+    lightText: 'text-[var(--warn)]',
   },
 }
 
@@ -69,13 +69,13 @@ export function ColorDiff({
     })
   }, [])
 
-  const handleExportDocument = useCallback((docDiff: DocumentDiff) => {
+ const handleExportDocument = useCallback((docDiff: DocumentDiff) => {
     const exportData = {
       identifier: docDiff.identifier,
       changes: docDiff.changes.map((change) => ({
         path: change.path,
-        oldValue: change.oldValue,
-        newValue: change.newValue,
+        old_value: change.old_value,
+        new_value: change.new_value,
         type: change.type,
       })),
       exportedAt: new Date().toISOString(),
@@ -92,8 +92,8 @@ export function ColorDiff({
     URL.revokeObjectURL(url)
   }, [])
 
-  const getChangeColor = (type: 'added' | 'removed' | 'changed') => {
-    const colors = COLOR_SCHEME[type]
+  const getChangeColor = (type: string) => {
+    const colors = COLOR_SCHEME[type as 'added' | 'removed' | 'changed']
     return {
       bg: colors.bg,
       text: colors.text,
@@ -104,11 +104,11 @@ export function ColorDiff({
 
   const renderFieldValue = (value: unknown) => {
     if (value === undefined || value === null) {
-      return <span className="text-slate-500 italic">null</span>
+      return <span className="text-[var(--text-muted)] italic">null</span>
     }
     
     if (typeof value === 'object') {
-      return <pre className="text-xs text-slate-300 overflow-x-auto">{JSON.stringify(value, null, 2)}</pre>
+      return <pre className="text-xs text-[var(--text-2)] overflow-x-auto">{JSON.stringify(value, null, 2)}</pre>
     }
     
     return <span className="font-mono text-sm">{String(value)}</span>
@@ -116,9 +116,9 @@ export function ColorDiff({
 
   if (!result) {
     return (
-      <div className="rounded-xl border border-slate-700 bg-slate-800 p-8 text-center">
-        <p className="text-slate-400">No comparison results available</p>
-        <p className="text-sm text-slate-500 mt-1">
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--panel)] p-8 text-center">
+        <p className="text-[var(--text-muted)]">No comparison results available</p>
+        <p className="text-sm text-[var(--text-muted)] mt-1">
           Run a comparison to see color-coded document differences
         </p>
       </div>
@@ -135,17 +135,17 @@ export function ColorDiff({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-emerald-400">Document Differences</h2>
+        <h2 className="text-xl font-semibold text-[var(--accent)]">Document Differences</h2>
         <div className="flex items-center space-x-2">
-          <span className="text-sm text-slate-400">
+          <span className="text-sm text-[var(--text-muted)]">
             Showing {updatedDocs.length} of {result.updated.count} updated documents
           </span>
         </div>
       </div>
 
       {error && (
-        <div className="rounded-lg border border-rose-500/30 bg-rose-900/20 p-4">
-          <div className="flex items-center space-x-2 text-rose-400">
+        <div className="rounded-lg border border-[var(--danger)] bg-[var(--danger-bg)] p-4">
+          <div className="flex items-center space-x-2 text-[var(--danger)]">
             <svg
               className="h-5 w-5"
               fill="none"
@@ -164,37 +164,37 @@ export function ColorDiff({
         </div>
       )}
 
-      <div className="rounded-xl border border-slate-700 bg-slate-800 p-4">
-        <h3 className="text-sm font-medium text-slate-300 mb-3">Legend:</h3>
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--panel)] p-4">
+        <h3 className="text-sm font-medium text-[var(--text-2)] mb-3">Legend:</h3>
         <div className="flex flex-wrap gap-4">
           <div className="flex items-center space-x-2">
             <div
               className="h-4 w-4 rounded"
               style={{ backgroundColor: COLOR_SCHEME.added.bg }}
             />
-            <span className="text-sm text-slate-300">Added</span>
+            <span className="text-sm text-[var(--text-2)]">Added</span>
           </div>
           <div className="flex items-center space-x-2">
             <div
               className="h-4 w-4 rounded"
               style={{ backgroundColor: COLOR_SCHEME.removed.bg }}
             />
-            <span className="text-sm text-slate-300">Removed</span>
+            <span className="text-sm text-[var(--text-2)]">Removed</span>
           </div>
           <div className="flex items-center space-x-2">
             <div
               className="h-4 w-4 rounded"
               style={{ backgroundColor: COLOR_SCHEME.changed.bg }}
             />
-            <span className="text-sm text-slate-300">Changed</span>
+            <span className="text-sm text-[var(--text-2)]">Changed</span>
           </div>
         </div>
       </div>
 
       <div className="space-y-4">
         {paginatedDocs.length === 0 ? (
-          <div className="rounded-xl border border-slate-700 bg-slate-800 p-8 text-center">
-            <p className="text-slate-400">No updated documents found</p>
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--panel)] p-8 text-center">
+            <p className="text-[var(--text-muted)]">No updated documents found</p>
           </div>
         ) : (
           paginatedDocs.map((doc) => (
@@ -222,7 +222,7 @@ export function ColorDiff({
             >
               ← Previous
             </Button>
-            <span className="text-sm text-slate-400">
+            <span className="text-sm text-[var(--text-muted)]">
               Page {currentPage + 1} of {totalPages || 1}
             </span>
             <Button
@@ -245,7 +245,7 @@ interface DocumentDiffViewProps {
   expandedFields: Set<string>
   onToggleExpand: (path: string) => void
   renderFieldValue: (value: unknown) => React.ReactNode
-  getChangeColor: (type: 'added' | 'removed' | 'changed') => {
+  getChangeColor: (type: string) => {
     bg: string
     text: string
     lightBg: string
@@ -269,7 +269,7 @@ function DocumentDiffView({
   const hasNestedFields = document.changes.some((change) => change.path.includes('.'))
 
   return (
-    <div className="rounded-xl border border-slate-700 bg-slate-800 p-6">
+    <div className="rounded-xl border border-[var(--border)] bg-[var(--panel)] p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-3">
           <div
@@ -283,7 +283,7 @@ function DocumentDiffView({
           </div>
         </div>
         <div className="flex items-center space-x-2">
-          <span className="text-sm text-slate-500">
+          <span className="text-sm text-[var(--text-muted)]">
             {document.changes.length} changes
           </span>
           <Button
@@ -300,19 +300,19 @@ function DocumentDiffView({
         {document.changes.map((change) => {
           const colors = getChangeColor(change.type)
           const isExpanded = expandedFields.has(change.path)
-          const _copyText = `${change.path}: ${change.oldValue !== undefined ? String(change.oldValue) : 'null'} → ${change.newValue !== undefined ? String(change.newValue) : 'null'}`
+          const _copyText = `${change.path}: ${change.old_value !== undefined ? String(change.old_value) : 'null'} → ${change.new_value !== undefined ? String(change.new_value) : 'null'}`
 
           return (
             <div
               key={change.path}
-              className="rounded-lg border border-slate-700 bg-slate-900/50 p-4"
+              className="rounded-lg border border-[var(--border)] bg-[var(--panel-2)] p-4"
             >
               <div className="flex items-start space-x-3">
                 <div className="mt-1">
                   {hasNestedFields && (
                     <button
                       onClick={() => onToggleExpand(change.path)}
-                      className="text-slate-400 hover:text-slate-200"
+                      className="text-[var(--text-muted)] hover:text-[var(--text-2)]"
                     >
                       <svg
                         className={`h-4 w-4 transition-transform ${
@@ -335,7 +335,7 @@ function DocumentDiffView({
                 <div className="flex-1 space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
-                      <span className="text-sm font-medium text-slate-300">
+                      <span className="text-sm font-medium text-[var(--text-2)]">
                         {change.path}
                       </span>
                       <span
@@ -359,37 +359,37 @@ function DocumentDiffView({
                   </div>
 
                   <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-                    {change.oldValue !== undefined && (
+                    {change.old_value !== undefined && (
                       <div className="space-y-1">
-                        <span className="text-xs text-slate-500">Old Value</span>
+                        <span className="text-xs text-[var(--text-muted)]">Old Value</span>
                         <div
                           className="rounded p-2"
                           style={{
                             backgroundColor: colors.bg,
                           }}
                         >
-                          {renderFieldValue(change.oldValue)}
+                          {renderFieldValue(change.old_value)}
                         </div>
                       </div>
                     )}
-                    {change.newValue !== undefined && (
+                    {change.new_value !== undefined && (
                       <div className="space-y-1">
-                        <span className="text-xs text-slate-500">New Value</span>
+                        <span className="text-xs text-[var(--text-muted)]">New Value</span>
                         <div
                           className="rounded p-2"
                           style={{
                             backgroundColor: colors.bg,
                           }}
                         >
-                          {renderFieldValue(change.newValue)}
+                          {renderFieldValue(change.new_value)}
                         </div>
                       </div>
                     )}
                   </div>
 
                   {hasNestedFields && isExpanded && (
-                    <div className="mt-2 pl-4 border-l-2 border-slate-700">
-                      <p className="text-xs text-slate-400">
+                    <div className="mt-2 pl-4 border-l-2 border-[var(--border)]">
+                      <p className="text-xs text-[var(--text-muted)]">
                         Nested field content expanded
                       </p>
                     </div>

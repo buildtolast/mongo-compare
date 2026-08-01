@@ -1,4 +1,4 @@
-use crate::types::{ChangedField, DiffStrategy, DocumentDiff};
+use crate::types::{ChangeField, DiffStrategy, DocumentDiff};
 use anyhow::Result;
 use serde_json::Value as JsonValue;
 
@@ -31,10 +31,21 @@ pub fn compare_documents(
     for doc in &docs_before {
         if let Some(id) = doc.get(identifier_field) {
             before_map.insert(id.to_string(), doc.clone());
+        } else {
+            log::warn!(
+                "Skipping before-side document lacking identifier field '{}'",
+                identifier_field
+            );
         }
     }
 
     for doc_after in &docs_after {
+        if doc_after.get(identifier_field).is_none() {
+            log::warn!(
+                "Skipping after-side document lacking identifier field '{}'",
+                identifier_field
+            );
+        }
         if let Some(id) = doc_after.get(identifier_field) {
             let id_str = id.to_string();
             if before_map.contains_key(&id_str) {
@@ -50,7 +61,7 @@ pub fn compare_documents(
                     if sample_limit > 0 && sample_updated.len() < sample_limit {
                         sample_updated.push(DocumentDiff {
                             identifier: id_str.clone(),
-                            changed_fields: diff.changed_fields,
+                            changes: diff.changed_fields,
                         });
                     }
                 }
@@ -88,7 +99,7 @@ pub fn compare_documents(
 }
 
 pub struct FieldDiff {
-    pub changed_fields: Vec<ChangedField>,
+    pub changed_fields: Vec<ChangeField>,
 }
 
 pub fn find_field_diffs(
@@ -97,25 +108,34 @@ pub fn find_field_diffs(
     identifier_field: &str,
     strategy: DiffStrategy,
 ) -> Result<FieldDiff> {
-    let mut changed_fields: Vec<ChangedField> = Vec::new();
+    let mut changed_fields: Vec<ChangeField> = Vec::new();
 
     match &strategy {
         DiffStrategy::All => {
-            for (key, value_after) in doc_after.as_object().unwrap() {
+            let before_obj = doc_before.as_object();
+            let after_obj = doc_after.as_object().unwrap();
+            let before_keys: std::collections::HashSet<String> = before_obj
+                .map(|o| o.keys().cloned().collect())
+                .unwrap_or_default();
+            let after_keys: std::collections::HashSet<String> =
+                after_obj.keys().cloned().collect();
+
+            for key in before_keys.union(&after_keys) {
                 if key == identifier_field {
                     continue;
                 }
 
                 let value_before = doc_before.get(key);
+                let value_after = doc_after.get(key);
 
                 match (value_before, value_after) {
-                    (Some(v_before), v_after) => {
+                    (Some(v_before), Some(v_after)) => {
                         if !json_eq(v_before, v_after) {
                             let old_str = strip_quotes(&v_before.to_string());
                             let new_str = strip_quotes(&serde_json::to_string(v_after)?);
 
                             if v_before.is_object() && v_after.is_object() {
-                                let mut nested_diffs: Vec<ChangedField> = Vec::new();
+                                let mut nested_diffs: Vec<ChangeField> = Vec::new();
                                 find_nested_diffs(
                                     v_before,
                                     v_after,
@@ -124,23 +144,36 @@ pub fn find_field_diffs(
                                 )?;
                                 changed_fields.extend(nested_diffs);
                             } else {
-                                changed_fields.push(ChangedField {
-                                    field_name: key.clone(),
-                                    old_value: old_str,
-                                    new_value: new_str,
+                                changed_fields.push(ChangeField {
+                                    path: key.clone(),
+                                    old_value: Some(old_str),
+                                    new_value: Some(new_str),
+                                    change_type: "changed".to_string(),
                                 });
                             }
                         }
                     }
-                    (None, v_after) => {
+                    (None, Some(v_after)) => {
                         if !v_after.is_object() {
-                            changed_fields.push(ChangedField {
-                                field_name: key.clone(),
-                                old_value: "null".to_string(),
-                                new_value: strip_quotes(&serde_json::to_string(v_after)?),
+                            changed_fields.push(ChangeField {
+                                path: key.clone(),
+                                old_value: None,
+                                new_value: Some(strip_quotes(&serde_json::to_string(v_after)?)),
+                                change_type: "added".to_string(),
                             });
                         }
                     }
+                    (Some(v_before), None) => {
+                        if !v_before.is_object() {
+                            changed_fields.push(ChangeField {
+                                path: key.clone(),
+                                old_value: Some(strip_quotes(&v_before.to_string())),
+                                new_value: None,
+                                change_type: "removed".to_string(),
+                            });
+                        }
+                    }
+                    (None, None) => {}
                 }
             }
         }
@@ -161,7 +194,7 @@ pub fn find_field_diffs(
                                 let new_str = strip_quotes(&serde_json::to_string(v_after)?);
 
                                 if v_before.is_object() && v_after.is_object() {
-                                    let mut nested_diffs: Vec<ChangedField> = Vec::new();
+                                    let mut nested_diffs: Vec<ChangeField> = Vec::new();
                                     find_nested_diffs(
                                         v_before,
                                         v_after,
@@ -170,19 +203,29 @@ pub fn find_field_diffs(
                                     )?;
                                     changed_fields.extend(nested_diffs);
                                 } else {
-                                    changed_fields.push(ChangedField {
-                                        field_name: field.clone(),
-                                        old_value: old_str,
-                                        new_value: new_str,
+                                    changed_fields.push(ChangeField {
+                                        path: field.clone(),
+                                        old_value: Some(old_str),
+                                        new_value: Some(new_str),
+                                        change_type: "changed".to_string(),
                                     });
                                 }
                             }
                         }
                         (None, Some(v_after)) if !v_after.is_object() => {
-                            changed_fields.push(ChangedField {
-                                field_name: field.clone(),
-                                old_value: "null".to_string(),
-                                new_value: strip_quotes(&serde_json::to_string(v_after)?),
+                            changed_fields.push(ChangeField {
+                                path: field.clone(),
+                                old_value: None,
+                                new_value: Some(strip_quotes(&serde_json::to_string(v_after)?)),
+                                change_type: "added".to_string(),
+                            });
+                        }
+                        (Some(v_before), None) if !v_before.is_object() => {
+                            changed_fields.push(ChangeField {
+                                path: field.clone(),
+                                old_value: Some(strip_quotes(&v_before.to_string())),
+                                new_value: None,
+                                change_type: "removed".to_string(),
                             });
                         }
                         _ => {}
@@ -191,7 +234,15 @@ pub fn find_field_diffs(
             }
         }
         DiffStrategy::Blacklist(fields) => {
-            for (key, value_after) in doc_after.as_object().unwrap() {
+            let before_obj = doc_before.as_object();
+            let after_obj = doc_after.as_object().unwrap();
+            let before_keys: std::collections::HashSet<String> = before_obj
+                .map(|o| o.keys().cloned().collect())
+                .unwrap_or_default();
+            let after_keys: std::collections::HashSet<String> =
+                after_obj.keys().cloned().collect();
+
+            for key in before_keys.union(&after_keys) {
                 if key == identifier_field {
                     continue;
                 }
@@ -201,15 +252,16 @@ pub fn find_field_diffs(
                 }
 
                 let value_before = doc_before.get(key);
+                let value_after = doc_after.get(key);
 
                 match (value_before, value_after) {
-                    (Some(v_before), v_after) => {
+                    (Some(v_before), Some(v_after)) => {
                         if !json_eq(v_before, v_after) {
                             let old_str = strip_quotes(&v_before.to_string());
                             let new_str = strip_quotes(&serde_json::to_string(v_after)?);
 
                             if v_before.is_object() && v_after.is_object() {
-                                let mut nested_diffs: Vec<ChangedField> = Vec::new();
+                                let mut nested_diffs: Vec<ChangeField> = Vec::new();
                                 find_nested_diffs(
                                     v_before,
                                     v_after,
@@ -218,36 +270,58 @@ pub fn find_field_diffs(
                                 )?;
                                 changed_fields.extend(nested_diffs);
                             } else {
-                                changed_fields.push(ChangedField {
-                                    field_name: key.clone(),
-                                    old_value: old_str,
-                                    new_value: new_str,
+                                changed_fields.push(ChangeField {
+                                    path: key.clone(),
+                                    old_value: Some(old_str),
+                                    new_value: Some(new_str),
+                                    change_type: "changed".to_string(),
                                 });
                             }
                         }
                     }
-                    (None, v_after) => {
+                    (None, Some(v_after)) => {
                         if !v_after.is_object() {
-                            changed_fields.push(ChangedField {
-                                field_name: key.clone(),
-                                old_value: "null".to_string(),
-                                new_value: strip_quotes(&serde_json::to_string(v_after)?),
+                            changed_fields.push(ChangeField {
+                                path: key.clone(),
+                                old_value: None,
+                                new_value: Some(strip_quotes(&serde_json::to_string(v_after)?)),
+                                change_type: "added".to_string(),
                             });
                         }
                     }
+                    (Some(v_before), None) => {
+                        if !v_before.is_object() {
+                            changed_fields.push(ChangeField {
+                                path: key.clone(),
+                                old_value: Some(strip_quotes(&v_before.to_string())),
+                                new_value: None,
+                                change_type: "removed".to_string(),
+                            });
+                        }
+                    }
+                    (None, None) => {}
                 }
             }
         }
         DiffStrategy::DeepEquality => {
-            for (key, value_after) in doc_after.as_object().unwrap() {
+            let before_obj = doc_before.as_object();
+            let after_obj = doc_after.as_object().unwrap();
+            let before_keys: std::collections::HashSet<String> = before_obj
+                .map(|o| o.keys().cloned().collect())
+                .unwrap_or_default();
+            let after_keys: std::collections::HashSet<String> =
+                after_obj.keys().cloned().collect();
+
+            for key in before_keys.union(&after_keys) {
                 if key == identifier_field {
                     continue;
                 }
 
                 let value_before = doc_before.get(key);
+                let value_after = doc_after.get(key);
 
                 match (value_before, value_after) {
-                    (Some(v_before), v_after) => {
+                    (Some(v_before), Some(v_after)) => {
                         if !json_eq(v_before, v_after) {
                             if v_before.is_object() && v_after.is_object() {
                                 // DeepEquality: don't report nested object changes, only primitive changes
@@ -256,37 +330,49 @@ pub fn find_field_diffs(
                                 let old_str = strip_quotes(&v_before.to_string());
                                 let new_str = strip_quotes(&serde_json::to_string(v_after)?);
 
-                                changed_fields.push(ChangedField {
-                                    field_name: key.clone(),
-                                    old_value: old_str,
-                                    new_value: new_str,
+                                changed_fields.push(ChangeField {
+                                    path: key.clone(),
+                                    old_value: Some(old_str),
+                                    new_value: Some(new_str),
+                                    change_type: "changed".to_string(),
                                 });
                             }
                         }
                     }
-                    (None, v_after) => {
+                    (None, Some(v_after)) => {
                         if !v_after.is_object() {
-                            let old_str = "null".to_string();
                             let new_str = strip_quotes(&serde_json::to_string(v_after)?);
 
-                            changed_fields.push(ChangedField {
-                                field_name: key.clone(),
-                                old_value: old_str,
-                                new_value: new_str,
+                            changed_fields.push(ChangeField {
+                                path: key.clone(),
+                                old_value: None,
+                                new_value: Some(new_str),
+                                change_type: "added".to_string(),
                             });
                         }
                     }
+                    (Some(v_before), None) => {
+                        if !v_before.is_object() {
+                            changed_fields.push(ChangeField {
+                                path: key.clone(),
+                                old_value: Some(strip_quotes(&v_before.to_string())),
+                                new_value: None,
+                                change_type: "removed".to_string(),
+                            });
+                        }
+                    }
+                    (None, None) => {}
                 }
             }
         }
     }
 
     let mut seen_fields: std::collections::HashSet<String> = std::collections::HashSet::new();
-    let mut deduplicated: Vec<ChangedField> = Vec::new();
+    let mut deduplicated: Vec<ChangeField> = Vec::new();
 
     for field in changed_fields {
-        if !seen_fields.contains(&field.field_name) {
-            seen_fields.insert(field.field_name.clone());
+        if !seen_fields.contains(&field.path) {
+            seen_fields.insert(field.path.clone());
             deduplicated.push(field);
         }
     }
@@ -300,7 +386,7 @@ fn find_nested_diffs(
     before: &JsonValue,
     after: &JsonValue,
     path: Vec<String>,
-    result: &mut Vec<ChangedField>,
+    result: &mut Vec<ChangeField>,
 ) -> anyhow::Result<()> {
     if let (JsonValue::Object(before_obj), JsonValue::Object(after_obj)) = (before, after) {
         let before_keys: std::collections::HashSet<String> = before_obj.keys().cloned().collect();
@@ -315,24 +401,27 @@ fn find_nested_diffs(
                     if before_val.is_object() && after_val.is_object() {
                         find_nested_diffs(before_val, after_val, new_path, result)?;
                     } else {
-                        result.push(ChangedField {
-                            field_name: new_path.join("."),
-                            old_value: strip_quotes(&before_val.to_string()),
-                            new_value: strip_quotes(&serde_json::to_string(after_val)?),
+                        result.push(ChangeField {
+                            path: new_path.join("."),
+                            old_value: Some(strip_quotes(&before_val.to_string())),
+                            new_value: Some(strip_quotes(&serde_json::to_string(after_val)?)),
+                            change_type: "changed".to_string(),
                         });
                     }
                 }
             } else if before_obj.contains_key(key) {
-                result.push(ChangedField {
-                    field_name: new_path.join("."),
-                    old_value: strip_quotes(&before_obj.get(key).unwrap().to_string()),
-                    new_value: "null".to_string(),
+                result.push(ChangeField {
+                    path: new_path.join("."),
+                    old_value: Some(strip_quotes(&before_obj.get(key).unwrap().to_string())),
+                    new_value: None,
+                    change_type: "removed".to_string(),
                 });
             } else {
-                result.push(ChangedField {
-                    field_name: new_path.join("."),
-                    old_value: "null".to_string(),
-                    new_value: strip_quotes(&serde_json::to_string(after_obj.get(key).unwrap())?),
+                result.push(ChangeField {
+                    path: new_path.join("."),
+                    old_value: None,
+                    new_value: Some(strip_quotes(&serde_json::to_string(after_obj.get(key).unwrap())?)),
+                    change_type: "added".to_string(),
                 });
             }
         }

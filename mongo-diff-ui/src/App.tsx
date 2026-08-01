@@ -1,31 +1,85 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ConnectionProvider, useConnection } from '@/contexts/ConnectionContext'
 import { ConnectionForm } from '@/components/connection/ConnectionForm'
-import { CollectionDiscovery } from '@/components/collection/CollectionDiscovery'
 import { SummaryCards } from '@/components/dashboard/SummaryCards'
 import { DiffGroups } from '@/components/dashboard/DiffGroups'
+import { SideBySideDiff } from '@/components/results/SideBySideDiff'
 import type { ComparisonResult } from '@/types/comparison'
 import { Button } from '@/components/common/Button'
+import { ExportService } from '@/services/exportService'
+import { HtmlReportService } from '@/services/htmlReportService'
 import './App.css'
+
+const exportService = new ExportService()
+const htmlReportService = new HtmlReportService()
+
+const THEME_STORAGE_KEY = 'mongo-compare-theme'
+
+interface ThemeOption {
+  id: string
+  label: string
+  swatch: string
+}
+
+const THEME_OPTIONS: ThemeOption[] = [
+  { id: 'navy', label: 'Navy', swatch: '#10b981' },
+  { id: 'slate', label: 'Slate mono', swatch: '#c9cdd6' },
+  { id: 'light', label: 'Light editorial', swatch: '#1d9e75' },
+  { id: 'mono', label: 'Terminal', swatch: '#2ee06a' },
+  { id: 'warm', label: 'Warm amber', swatch: '#e08a3c' },
+  { id: 'violet', label: 'Violet', swatch: '#a48ef0' },
+]
+
+const VALID_THEME_IDS = THEME_OPTIONS.map((option) => option.id)
+
+function getInitialTheme(): string {
+  const stored = localStorage.getItem(THEME_STORAGE_KEY)
+  return stored && VALID_THEME_IDS.includes(stored) ? stored : 'navy'
+}
+
+function downloadBlob(content: string, mimeType: string, filename: string): void {
+  const blob = new Blob([content], { type: mimeType })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
 
 function DashboardContent() {
   const { state, dispatch } = useConnection()
   const [result, setResult] = useState<ComparisonResult | null>(null)
-  const [sourceIdentifierField, setSourceIdentifierField] = useState('_id')
-  const [targetIdentifierField, setTargetIdentifierField] = useState('_id')
+  const [sourceIdentifierField] = useState('_id')
   const [sourceCollections, setSourceCollections] = useState<string[]>([])
   const [targetCollections, setTargetCollections] = useState<string[]>([])
+  const [sourceDatabases, setSourceDatabases] = useState<string[]>([])
+  const [targetDatabases, setTargetDatabases] = useState<string[]>([])
+  const [isRunning, setIsRunning] = useState(false)
+  const [comparisonError, setComparisonError] = useState<string | null>(null)
+  const [theme, setTheme] = useState<string>(getInitialTheme)
+  const [resultsView, setResultsView] = useState<'summary' | 'side-by-side'>('summary')
+  const [sourceFilterInput, setSourceFilterInput] = useState('')
+  const [targetFilterInput, setTargetFilterInput] = useState('')
+  const [filterError, setFilterError] = useState<string | null>(null)
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+    localStorage.setItem(THEME_STORAGE_KEY, theme)
+  }, [theme])
 
   const handleConnect = async (connectionType: 'source' | 'target') => {
     try {
+      const connectionString = connectionType === 'source'
+        ? state.source.connectionString
+        : state.target.connectionString
+
       const response = await fetch('/api/get-databases', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          connection_string: connectionType === 'source'
-            ? state.source.connectionString
-            : state.target.connectionString,
-        }),
+        body: JSON.stringify({ connection_string: connectionString }),
       })
 
       if (response.ok) {
@@ -35,6 +89,31 @@ function DashboardContent() {
             type: connectionType === 'source' ? 'SET_SOURCE_CONNECTED' : 'SET_TARGET_CONNECTED',
             payload: true,
           })
+
+          if (connectionType === 'source') {
+            setSourceDatabases(result.databases || [])
+          } else {
+            setTargetDatabases(result.databases || [])
+          }
+
+          const database = connectionType === 'source'
+            ? state.source.database
+            : state.target.database
+
+          if (database) {
+            const collectionsResponse = await fetch('/api/get-collections', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ connection_string: connectionString, database }),
+            })
+
+            if (collectionsResponse.ok) {
+              const collectionsResult = await collectionsResponse.json()
+              if (collectionsResult.success) {
+                handleCollectionsChange(connectionType, collectionsResult.collections || [])
+              }
+            }
+          }
         }
       }
     } catch (error) {
@@ -53,18 +132,31 @@ function DashboardContent() {
     }
   }
 
-  const handleIdentifierChange = (
-    connectionType: 'source' | 'target',
-    field: string
-  ) => {
-    if (connectionType === 'source') {
-      setSourceIdentifierField(field)
-    } else {
-      setTargetIdentifierField(field)
-    }
-  }
-
   const handleRunComparison = async () => {
+    setFilterError(null)
+
+    let sourceFilter: unknown
+    if (sourceFilterInput.trim()) {
+      try {
+        sourceFilter = JSON.parse(sourceFilterInput)
+      } catch {
+        setFilterError('Source filter is not valid JSON')
+        return
+      }
+    }
+
+    let targetFilter: unknown
+    if (targetFilterInput.trim()) {
+      try {
+        targetFilter = JSON.parse(targetFilterInput)
+      } catch {
+        setFilterError('Target filter is not valid JSON')
+        return
+      }
+    }
+
+    setIsRunning(true)
+    setComparisonError(null)
     try {
       const response = await fetch('/api/run-comparison', {
         method: 'POST',
@@ -77,7 +169,9 @@ function DashboardContent() {
           collections: sourceCollections.length > 0 ? sourceCollections : ['users'],
           identifier_field: sourceIdentifierField,
           sample_limit: 5,
-          diff_strategy: 'All',
+          diff_strategy: 'all',
+          ...(sourceFilter !== undefined ? { source_filter: sourceFilter } : {}),
+          ...(targetFilter !== undefined ? { target_filter: targetFilter } : {}),
         }),
       })
 
@@ -85,10 +179,17 @@ function DashboardContent() {
         const data = await response.json()
         if (data.success) {
           setResult(data.result)
+        } else {
+          setComparisonError(data.error || 'Comparison failed')
         }
+      } else {
+        setComparisonError(`Comparison failed: ${response.status} ${response.statusText}`)
       }
     } catch (error) {
       console.error('Comparison failed:', error)
+      setComparisonError(error instanceof Error ? error.message : 'Comparison failed')
+    } finally {
+      setIsRunning(false)
     }
   }
 
@@ -97,15 +198,34 @@ function DashboardContent() {
     setResult(null)
     setSourceCollections([])
     setTargetCollections([])
-    setSourceIdentifierField('_id')
-    setTargetIdentifierField('_id')
+    setSourceDatabases([])
+    setTargetDatabases([])
+    setSourceFilterInput('')
+    setTargetFilterInput('')
+    setFilterError(null)
+    setResultsView('summary')
   }
 
-  const handleDisconnect = (connectionType: 'source' | 'target') => {
-    dispatch({
-      type: connectionType === 'source' ? 'SET_SOURCE_CONNECTED' : 'SET_TARGET_CONNECTED',
-      payload: false,
-    })
+  const handleExportCSV = () => {
+    if (!result) return
+    const csv = exportService.exportCSV(result)
+    downloadBlob(csv, 'text/csv', exportService.getFilename('csv', result.timestamp))
+  }
+
+  const handleExportJSON = () => {
+    if (!result) return
+    const json = exportService.exportJSON(result)
+    downloadBlob(json, 'application/json', exportService.getFilename('json', result.timestamp))
+  }
+
+  const handleExportHTML = () => {
+    if (!result) return
+    const html = htmlReportService.generateHTMLReport(result)
+    downloadBlob(
+      html,
+      'text/html',
+      `mongo-diff-report-${htmlReportService.formatTimestampForFilename(result.timestamp)}.html`
+    )
   }
 
   return (
@@ -114,6 +234,20 @@ function DashboardContent() {
         <header>
           <h1>MongoDB Compare</h1>
           <p className="subtitle">Database Diff Tool</p>
+          <div className="theme-switcher">
+            {THEME_OPTIONS.map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                className={`theme-swatch${theme === option.id ? ' active' : ''}`}
+                onClick={() => setTheme(option.id)}
+                aria-pressed={theme === option.id}
+              >
+                <span className="theme-swatch-dot" style={{ background: option.swatch }} />
+                {option.label}
+              </button>
+            ))}
+          </div>
         </header>
 
         {/* Connection Panels */}
@@ -130,6 +264,11 @@ function DashboardContent() {
               <div className="connection-string">
                 {state.source.connectionString}
               </div>
+              {sourceDatabases.length > 0 && (
+                <div className="databases-section">
+                  <p className="collections-title">Databases: {sourceDatabases.join(', ')}</p>
+                </div>
+              )}
               <div className="collections-section">
                 <p className="collections-title">Collections:</p>
                 {sourceCollections.length > 0 ? (
@@ -140,7 +279,7 @@ function DashboardContent() {
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-slate-400">Select collections from target panel</p>
+                  <p className="text-sm text-[var(--text-muted)]">Select collections from target panel</p>
                 )}
               </div>
               <Button
@@ -178,6 +317,11 @@ function DashboardContent() {
               <div className="connection-string">
                 {state.target.connectionString}
               </div>
+              {targetDatabases.length > 0 && (
+                <div className="databases-section">
+                  <p className="collections-title">Databases: {targetDatabases.join(', ')}</p>
+                </div>
+              )}
               <div className="collections-section">
                 <p className="collections-title">Collections:</p>
                 {targetCollections.length > 0 ? (
@@ -188,7 +332,7 @@ function DashboardContent() {
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-slate-400">Select collections from source panel</p>
+                  <p className="text-sm text-[var(--text-muted)]">Select collections from source panel</p>
                 )}
               </div>
               <Button
@@ -217,16 +361,74 @@ function DashboardContent() {
           </div>
         )}
 
+        {/* Connection Form */}
+        <div className="connection-form-section">
+          <ConnectionForm
+            state={state}
+            dispatch={dispatch}
+          />
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 mt-4">
+            <div>
+              <label
+                htmlFor="source-filter"
+                className="block text-sm font-medium text-[var(--text-2)] mb-1"
+              >
+                Source Filter (optional)
+              </label>
+              <textarea
+                id="source-filter"
+                className="w-full rounded-lg border border-[var(--border)] bg-[var(--panel)] p-2 text-sm font-mono text-[var(--text)]"
+                rows={2}
+                placeholder='{"status": "active"}'
+                value={sourceFilterInput}
+                onChange={(e) => setSourceFilterInput(e.target.value)}
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="target-filter"
+                className="block text-sm font-medium text-[var(--text-2)] mb-1"
+              >
+                Target Filter (optional)
+              </label>
+              <textarea
+                id="target-filter"
+                className="w-full rounded-lg border border-[var(--border)] bg-[var(--panel)] p-2 text-sm font-mono text-[var(--text)]"
+                rows={2}
+                placeholder='{"status": "active"}'
+                value={targetFilterInput}
+                onChange={(e) => setTargetFilterInput(e.target.value)}
+              />
+            </div>
+          </div>
+          {filterError && (
+            <div className="flex items-center text-sm font-medium text-[var(--danger)] mt-1">
+              {filterError}
+            </div>
+          )}
+
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleRunComparison}
+            disabled={!state.sourceConnected || !state.targetConnected || isRunning}
+            isLoading={isRunning}
+          >
+            {isRunning ? 'Running...' : 'Run Comparison'}
+          </Button>
+          {comparisonError && (
+            <div className="flex items-center text-sm font-medium text-[var(--danger)]">
+              {comparisonError}
+            </div>
+          )}
+        </div>
+
         {/* Comparison Results */}
         {result && (
           <div className="results-section">
             <div className="results-header">
               <h2 className="results-title">COMPARISON RESULTS</h2>
-              <input
-                type="text"
-                className="search-box"
-                placeholder="Search..."
-              />
             </div>
 
             {/* Summary Cards */}
@@ -256,23 +458,51 @@ function DashboardContent() {
               </div>
             </div>
 
-            {/* Diff Groups */}
-            <DiffGroups
-              deleted={result.deleted_count}
-              updated={result.updated_count}
-              added={result.created_count}
-              deletedItems={result.sample_deleted || []}
-              updatedItems={result.sample_updated || []}
-              addedItems={result.sample_created || []}
-              onToggle={() => {}}
-              onExpand={() => {}}
-            />
+            {/* Results View Toggle */}
+            <div className="flex items-center space-x-2">
+              <Button
+                variant={resultsView === 'summary' ? 'primary' : 'secondary'}
+                size="sm"
+                onClick={() => setResultsView('summary')}
+              >
+                Summary
+              </Button>
+              <Button
+                variant={resultsView === 'side-by-side' ? 'primary' : 'secondary'}
+                size="sm"
+                onClick={() => setResultsView('side-by-side')}
+              >
+                Side-by-side
+              </Button>
+            </div>
+
+            {resultsView === 'summary' ? (
+              <DiffGroups
+                deleted={result.deleted.count}
+                updated={result.updated.count}
+                added={result.created.count}
+                deletedItems={result.deleted.samples || []}
+                updatedItems={result.updated.samples || []}
+                addedItems={result.created.samples || []}
+              />
+            ) : (
+              <SideBySideDiff
+                result={result}
+                error={comparisonError ?? undefined}
+              />
+            )}
 
             {/* Export Section */}
             <div className="export-section">
-              <Button variant="secondary" size="sm">Download CSV</Button>
-              <Button variant="secondary" size="sm">Download JSON</Button>
-              <Button variant="secondary" size="sm">HTML Report</Button>
+              <Button variant="secondary" size="sm" onClick={handleExportCSV} disabled={!result}>
+                Download CSV
+              </Button>
+              <Button variant="secondary" size="sm" onClick={handleExportJSON} disabled={!result}>
+                Download JSON
+              </Button>
+              <Button variant="secondary" size="sm" onClick={handleExportHTML} disabled={!result}>
+                HTML Report
+              </Button>
             </div>
 
             {/* Reset Button */}

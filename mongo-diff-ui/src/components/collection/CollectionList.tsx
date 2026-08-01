@@ -84,7 +84,7 @@ export function CollectionList({
       {isLoading ? (
         <div className="flex items-center justify-center py-8">
           <svg
-            className="animate-spin -ml-1 mr-3 h-5 w-5 text-emerald-500"
+            className="animate-spin -ml-1 mr-3 h-5 w-5 text-[var(--accent)]"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
@@ -125,7 +125,7 @@ export function CollectionList({
               >
                 Select None
               </Button>
-              <span className="text-sm text-slate-400 ml-auto">
+              <span className="text-sm text-[var(--text-muted)] ml-auto">
                 {selectedCollections.length} of {filteredCollections.length} selected
               </span>
             </div>
@@ -140,7 +140,7 @@ export function CollectionList({
 
             <div className="space-y-2">
               {filteredCollections.length === 0 ? (
-                <div className="text-sm text-slate-500 text-center py-4 bg-slate-800/50 rounded-lg border border-slate-700">
+                <div className="text-sm text-[var(--text-muted)] text-center py-4 bg-[var(--panel-2)] rounded-lg border border-[var(--border)]">
                   {pattern ? 'No collections match the pattern' : 'No collections available'}
                 </div>
               ) : (
@@ -158,17 +158,17 @@ export function CollectionList({
             </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-700">
+          <div className="pt-4 border-t border-[var(--border)]">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="block text-sm font-medium text-slate-300">
+                <label className="block text-sm font-medium text-[var(--text-2)]">
                   Identifier Field
                 </label>
                 <div className="space-y-1">
                   <select
                     value={identifierField}
                     onChange={handleIdentifierChange}
-                    className="block w-full rounded-lg border border-slate-600 bg-slate-800 py-2 px-3 text-slate-100 focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm"
+                    className="block w-full rounded-lg border border-[var(--border)] bg-[var(--panel)] py-2 px-3 text-[var(--text)] focus:border-[var(--accent)] focus:ring-[var(--accent)] sm:text-sm"
                     data-testid="identifier-select"
                   >
                     {COMMON_IDENTIFIER_FIELDS.map((field) => (
@@ -183,14 +183,14 @@ export function CollectionList({
                     onChange={(e) => onIdentifierChange(e.target.value)}
                     data-testid="identifier-custom-input"
                   />
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-[var(--text-muted)]">
                     Choose from common fields or type a custom field name that uniquely identifies documents
                   </p>
                 </div>
               </div>
 
               <div className="space-y-1">
-                <label className="block text-sm font-medium text-slate-300">
+                <label className="block text-sm font-medium text-[var(--text-2)]">
                   Composite Keys
                 </label>
                 <Input

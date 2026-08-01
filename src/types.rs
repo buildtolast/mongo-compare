@@ -93,29 +93,47 @@ pub struct Config {
 
 #[derive(Debug, Serialize)]
 pub struct ComparisonResult {
-    pub started_at: String,
-    pub finished_at: String,
-    pub collection_before: String,
-    pub collection_after: String,
+    pub timestamp: String,
+    pub source_instance: String,
+    pub target_instance: String,
+    pub source_database: String,
+    pub target_database: String,
     pub total_before: usize,
     pub total_after: usize,
-    pub created_count: usize,
-    pub updated_count: usize,
-    pub deleted_count: usize,
-    pub sample_created: Vec<JsonValue>,
-    pub sample_updated: Vec<DocumentDiff>,
-    pub sample_deleted: Vec<JsonValue>,
+    pub created: CreatedDiff,
+    pub updated: UpdatedDiff,
+    pub deleted: DeletedDiff,
+}
+
+#[derive(Debug, Serialize)]
+pub struct CreatedDiff {
+    pub count: usize,
+    pub samples: Vec<JsonValue>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct UpdatedDiff {
+    pub count: usize,
+    pub samples: Vec<DocumentDiff>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct DeletedDiff {
+    pub count: usize,
+    pub samples: Vec<JsonValue>,
 }
 
 #[derive(Debug, Serialize, PartialEq, Clone)]
 pub struct DocumentDiff {
     pub identifier: String,
-    pub changed_fields: Vec<ChangedField>,
+    pub changes: Vec<ChangeField>,
 }
 
 #[derive(Debug, Serialize, PartialEq, Clone)]
-pub struct ChangedField {
-    pub field_name: String,
-    pub old_value: String,
-    pub new_value: String,
+pub struct ChangeField {
+    pub path: String,
+    pub old_value: Option<String>,
+    pub new_value: Option<String>,
+    #[serde(rename = "type")]
+    pub change_type: String,
 }

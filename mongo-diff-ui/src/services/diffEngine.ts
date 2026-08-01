@@ -1,4 +1,4 @@
-import type { ChangedField, ComparisonResult, DocumentDiff } from '@/types'
+import type { ChangeField, ComparisonResult, DocumentDiff } from '@/types'
 
 export enum DiffStrategy {
   All,
@@ -75,10 +75,12 @@ export class DiffEngine {
     
     return {
       timestamp: new Date().toISOString(),
-      sourceInstance: '',
-      targetInstance: '',
-      sourceDatabase: '',
-      targetDatabase: '',
+      source_instance: '',
+      target_instance: '',
+      source_database: '',
+      target_database: '',
+      total_before: sourceDocs.length,
+      total_after: targetDocs.length,
       created: {
         count: createdCount,
         samples: sampleLimit > 0 ? createdDocs.slice(0, sampleLimit) : createdDocs,
@@ -121,14 +123,18 @@ export class DiffEngine {
     return values.join('|')
   }
   
+  private toChangeValue(value: unknown): string | undefined | null {
+    return value === undefined || value === null ? value : String(value)
+  }
+  
   private findFieldDiffs(
     sourceDoc: Record<string, unknown>,
     targetDoc: Record<string, unknown>,
     identifierFields: string[],
     strategy: DiffStrategy,
     fields: string[]
-  ): { changes: ChangedField[] } {
-    const changes: ChangedField[] = []
+  ): { changes: ChangeField[] } {
+    const changes: ChangeField[] = []
     
     switch (strategy) {
       case DiffStrategy.All:
@@ -152,7 +158,7 @@ export class DiffEngine {
     sourceDoc: Record<string, unknown>,
     targetDoc: Record<string, unknown>,
     path: string[],
-    changes: ChangedField[],
+    changes: ChangeField[],
     identifierFields: string[]
   ): void {
     const allKeys = new Set([
@@ -172,8 +178,8 @@ export class DiffEngine {
         if (currentValue !== undefined && !this.isObject(currentValue)) {
           changes.push({
             path: [...path, key].join('.'),
-            oldValue: null,
-            newValue: currentValue,
+            old_value: null,
+            new_value: this.toChangeValue(currentValue),
             type: 'added',
           })
         }
@@ -181,8 +187,8 @@ export class DiffEngine {
         if (!this.isObject(previousValue)) {
           changes.push({
             path: [...path, key].join('.'),
-            oldValue: previousValue,
-            newValue: null,
+            old_value: this.toChangeValue(previousValue),
+            new_value: null,
             type: 'removed',
           })
         }
@@ -198,8 +204,8 @@ export class DiffEngine {
         } else {
           changes.push({
             path: [...path, key].join('.'),
-            oldValue: previousValue,
-            newValue: currentValue,
+            old_value: this.toChangeValue(previousValue),
+            new_value: this.toChangeValue(currentValue),
             type: 'changed',
           })
         }
@@ -211,7 +217,7 @@ export class DiffEngine {
     sourceDoc: Record<string, unknown>,
     targetDoc: Record<string, unknown>,
     path: string[],
-    changes: ChangedField[],
+    changes: ChangeField[],
     identifierFields: string[],
     fields: string[]
   ): void {
@@ -237,8 +243,8 @@ export class DiffEngine {
           } else {
             changes.push({
               path: [...path, field].join('.'),
-              oldValue: valueBefore,
-              newValue: valueAfter,
+              old_value: this.toChangeValue(valueBefore),
+              new_value: this.toChangeValue(valueAfter),
               type: 'changed',
             })
           }
@@ -247,8 +253,8 @@ export class DiffEngine {
         if (!this.isObject(valueAfter)) {
           changes.push({
             path: [...path, field].join('.'),
-            oldValue: null,
-            newValue: valueAfter,
+            old_value: null,
+            new_value: this.toChangeValue(valueAfter),
             type: 'added',
           })
         }
@@ -260,7 +266,7 @@ export class DiffEngine {
     sourceDoc: Record<string, unknown>,
     targetDoc: Record<string, unknown>,
     path: string[],
-    changes: ChangedField[],
+    changes: ChangeField[],
     identifierFields: string[],
     blacklist: string[]
   ): void {
@@ -281,8 +287,8 @@ export class DiffEngine {
         if (currentValue !== undefined && !this.isObject(currentValue)) {
           changes.push({
             path: [...path, key].join('.'),
-            oldValue: null,
-            newValue: currentValue,
+            old_value: null,
+            new_value: this.toChangeValue(currentValue),
             type: 'added',
           })
         }
@@ -290,8 +296,8 @@ export class DiffEngine {
         if (!this.isObject(previousValue)) {
           changes.push({
             path: [...path, key].join('.'),
-            oldValue: previousValue,
-            newValue: null,
+            old_value: this.toChangeValue(previousValue),
+            new_value: null,
             type: 'removed',
           })
         }
@@ -308,8 +314,8 @@ export class DiffEngine {
         } else {
           changes.push({
             path: [...path, key].join('.'),
-            oldValue: previousValue,
-            newValue: currentValue,
+            old_value: this.toChangeValue(previousValue),
+            new_value: this.toChangeValue(currentValue),
             type: 'changed',
           })
         }
@@ -321,7 +327,7 @@ export class DiffEngine {
     sourceDoc: Record<string, unknown>,
     targetDoc: Record<string, unknown>,
     path: string[],
-    changes: ChangedField[],
+    changes: ChangeField[],
     identifierFields: string[]
   ): void {
     const allKeys = new Set([
@@ -341,8 +347,8 @@ export class DiffEngine {
         if (currentValue !== undefined && !this.isObject(currentValue)) {
           changes.push({
             path: [...path, key].join('.'),
-            oldValue: null,
-            newValue: currentValue,
+            old_value: null,
+            new_value: this.toChangeValue(currentValue),
             type: 'added',
           })
         }
@@ -350,8 +356,8 @@ export class DiffEngine {
         if (!this.isObject(previousValue)) {
           changes.push({
             path: [...path, key].join('.'),
-            oldValue: previousValue,
-            newValue: null,
+            old_value: this.toChangeValue(previousValue),
+            new_value: null,
             type: 'removed',
           })
         }
@@ -361,8 +367,8 @@ export class DiffEngine {
         } else {
           changes.push({
             path: [...path, key].join('.'),
-            oldValue: previousValue,
-            newValue: currentValue,
+            old_value: this.toChangeValue(previousValue),
+            new_value: this.toChangeValue(currentValue),
             type: 'changed',
           })
         }

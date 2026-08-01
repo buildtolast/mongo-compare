@@ -2,18 +2,10 @@ import { useState, useCallback } from 'react'
 import { Button } from '@/components/common/Button'
 import type { MonitoringState } from '@/services/monitoringService'
 import { MonitoringStatus } from './MonitoringStatus'
+import type { ComparisonResult } from '@/types/comparison'
 
 export interface SummaryStatsProps {
-  result?: {
-    timestamp: string
-    sourceInstance: string
-    targetInstance: string
-    sourceDatabase: string
-    targetDatabase: string
-    created: { count: number }
-    updated: { count: number }
-    deleted: { count: number }
-  }
+  result?: ComparisonResult
   isLoading?: boolean
   error?: string
   onExport?: (format: 'json' | 'csv' | 'html') => void
@@ -53,9 +45,9 @@ export function SummaryStats({
 
   if (!result) {
     return (
-      <div className="rounded-xl border border-slate-700 bg-slate-800 p-8 text-center">
-        <p className="text-slate-400">No comparison results available</p>
-        <p className="text-sm text-slate-500 mt-1">
+      <div className="rounded-xl border border-[var(--border)] bg-[var(--panel)] p-8 text-center">
+        <p className="text-[var(--text-muted)]">No comparison results available</p>
+        <p className="text-sm text-[var(--text-muted)] mt-1">
           Run a comparison to see summary statistics
         </p>
       </div>
@@ -70,7 +62,7 @@ export function SummaryStats({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-emerald-400">Comparison Results</h2>
+        <h2 className="text-xl font-semibold text-[var(--accent)]">Comparison Results</h2>
         <div className="flex items-center space-x-3">
           <div className="flex items-center space-x-2">
             <label className="relative inline-flex items-center cursor-pointer">
@@ -81,8 +73,8 @@ export function SummaryStats({
                 onChange={handleMonitoringToggle}
                 disabled={isLoading}
               />
-              <div className="pointer-events-none peer h-6 w-11 rounded-full bg-slate-700 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-emerald-600 peer-checked:after:translate-x-full peer-disabled:opacity-50"></div>
-              <span className="ml-3 text-sm font-medium text-slate-300">Monitoring</span>
+              <div className="pointer-events-none peer h-6 w-11 rounded-full bg-[var(--border)] after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-[var(--accent-text)] after:transition-all after:content-[''] peer-checked:bg-[var(--accent)] peer-checked:after:translate-x-full peer-disabled:opacity-50"></div>
+              <span className="ml-3 text-sm font-medium text-[var(--text-2)]">Monitoring</span>
             </label>
           </div>
           <Button
@@ -97,8 +89,8 @@ export function SummaryStats({
       </div>
 
       {error && (
-        <div className="rounded-lg border border-rose-500/30 bg-rose-900/20 p-4">
-          <div className="flex items-center space-x-2 text-rose-400">
+        <div className="rounded-lg border border-[var(--danger)] bg-[var(--danger-bg)] p-4">
+          <div className="flex items-center space-x-2 text-[var(--danger)]">
             <svg
               className="h-5 w-5"
               fill="none"
@@ -119,8 +111,8 @@ export function SummaryStats({
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {/* Created Card */}
-        <div data-testid="stat-card-created" className={`${statCardBaseClasses} bg-emerald-900/30 border-emerald-500/30`}>
-          <div className="flex items-center space-x-2 text-emerald-400">
+        <div data-testid="stat-card-created" className={`${statCardBaseClasses} bg-[var(--add-bg)] border-[var(--accent)]`}>
+          <div className="flex items-center space-x-2 text-[var(--accent)]">
             <svg
               className="h-5 w-5"
               fill="none"
@@ -144,8 +136,8 @@ export function SummaryStats({
         </div>
 
         {/* Updated Card */}
-        <div data-testid="stat-card-updated" className={`${statCardBaseClasses} bg-amber-900/30 border-amber-500/30`}>
-          <div className="flex items-center space-x-2 text-amber-400">
+        <div data-testid="stat-card-updated" className={`${statCardBaseClasses} bg-[var(--warn-bg)] border-[var(--warn)]`}>
+          <div className="flex items-center space-x-2 text-[var(--warn)]">
             <svg
               className="h-5 w-5"
               fill="none"
@@ -169,8 +161,8 @@ export function SummaryStats({
         </div>
 
         {/* Deleted Card */}
-        <div data-testid="stat-card-deleted" className={`${statCardBaseClasses} bg-rose-900/30 border-rose-500/30`}>
-          <div className="flex items-center space-x-2 text-rose-400">
+        <div data-testid="stat-card-deleted" className={`${statCardBaseClasses} bg-[var(--danger-bg)] border-[var(--danger)]`}>
+          <div className="flex items-center space-x-2 text-[var(--danger)]">
             <svg
               className="h-5 w-5"
               fill="none"
@@ -194,8 +186,8 @@ export function SummaryStats({
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-slate-700 bg-slate-800 p-4">
-        <div className="flex items-center space-x-2 text-sm text-slate-400">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-[var(--border)] bg-[var(--panel)] p-4">
+        <div className="flex items-center space-x-2 text-sm text-[var(--text-muted)]">
           <svg
             className="h-4 w-4"
             fill="none"

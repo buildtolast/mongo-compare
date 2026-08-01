@@ -4,27 +4,25 @@ import type { ComparisonResult } from '@/types/comparison'
 
 describe('SummaryCards', () => {
   const mockResult: ComparisonResult = {
-    started_at: '2024-01-01T00:00:00Z',
-    finished_at: '2024-01-01T00:01:00Z',
-    collection_before: 'users',
-    collection_after: 'users',
+    timestamp: '2024-01-01T00:00:00Z',
+    source_instance: 'source-db',
+    target_instance: 'target-db',
+    source_database: 'users',
+    target_database: 'users',
     total_before: 500,
     total_after: 403,
-    created_count: 0,
-    updated_count: 3,
-    deleted_count: 97,
-    sample_created: [],
-    sample_updated: [
+    created: { count: 0, samples: [] },
+    updated: { count: 3, samples: [
       {
         identifier: '401',
-        changed_fields: [
-          { field_name: 'name', old_value: 'User401', new_value: 'ExtraUser1' },
-          { field_name: 'age', old_value: '21', new_value: '25' },
-          { field_name: 'email', old_value: 'user401@test2.com', new_value: 'extra1@test.com' },
+        changes: [
+          { path: 'name', old_value: 'User401', new_value: 'ExtraUser1', type: 'changed' },
+          { path: 'age', old_value: '21', new_value: '25', type: 'changed' },
+          { path: 'email', old_value: 'user401@test2.com', new_value: 'extra1@test.com', type: 'changed' },
         ],
       },
-    ],
-    sample_deleted: [
+    ]},
+    deleted: { count: 97, samples: [
       {
         _id: 435,
         name: 'User435',
@@ -37,7 +35,7 @@ describe('SummaryCards', () => {
         empty_field: null,
         nested: null,
       },
-    ],
+    ]},
   }
 
   it('renders SummaryCards component with comparison result', () => {
@@ -54,18 +52,16 @@ describe('SummaryCards', () => {
 
   it('renders with zero values for created documents', () => {
     const zeroCreatedResult: ComparisonResult = {
-      started_at: '2024-01-01T00:00:00Z',
-      finished_at: '2024-01-01T00:01:00Z',
-      collection_before: 'users',
-      collection_after: 'users',
+      timestamp: '2024-01-01T00:00:00Z',
+      source_instance: 'source-db',
+      target_instance: 'target-db',
+      source_database: 'users',
+      target_database: 'users',
       total_before: 500,
       total_after: 500,
-      created_count: 0,
-      updated_count: 0,
-      deleted_count: 0,
-      sample_created: [],
-      sample_updated: [],
-      sample_deleted: [],
+      created: { count: 0, samples: [] },
+      updated: { count: 0, samples: [] },
+      deleted: { count: 0, samples: [] },
     }
     render(<SummaryCards result={zeroCreatedResult} />)
     expect(screen.getByText('0')).toBeInTheDocument()
@@ -75,8 +71,7 @@ describe('SummaryCards', () => {
   it('renders with zero values for updated documents', () => {
     const zeroUpdatedResult: ComparisonResult = {
       ...mockResult,
-      updated_count: 0,
-      sample_updated: [],
+      updated: { count: 0, samples: [] },
     }
     render(<SummaryCards result={zeroUpdatedResult} />)
     expect(screen.getByText('0')).toBeInTheDocument()
@@ -86,8 +81,7 @@ describe('SummaryCards', () => {
   it('renders with zero values for deleted documents', () => {
     const zeroDeletedResult: ComparisonResult = {
       ...mockResult,
-      deleted_count: 0,
-      sample_deleted: [],
+      deleted: { count: 0, samples: [] },
     }
     render(<SummaryCards result={zeroDeletedResult} />)
     expect(screen.getByText('0')).toBeInTheDocument()
@@ -122,18 +116,16 @@ describe('SummaryCards', () => {
 
   it('handles empty results gracefully', () => {
     const emptyResult: ComparisonResult = {
-      started_at: '2024-01-01T00:00:00Z',
-      finished_at: '2024-01-01T00:01:00Z',
-      collection_before: 'users',
-      collection_after: 'users',
+      timestamp: '2024-01-01T00:00:00Z',
+      source_instance: 'source-db',
+      target_instance: 'target-db',
+      source_database: 'users',
+      target_database: 'users',
       total_before: 0,
     total_after: 0,
-    created_count: 0,
-    updated_count: 0,
-    deleted_count: 0,
-    sample_created: [],
-    sample_updated: [],
-    sample_deleted: [],
+    created: { count: 0, samples: [] },
+    updated: { count: 0, samples: [] },
+    deleted: { count: 0, samples: [] },
     }
     render(<SummaryCards result={emptyResult} />)
     expect(screen.getByText('0')).toBeInTheDocument()

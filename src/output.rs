@@ -24,10 +24,12 @@ pub fn print_summary(
         println!("\n📝 Updated documents (sample):");
         for diff in sample_updated {
             println!("\n  ID: {}", diff.identifier);
-            for field in &diff.changed_fields {
+            for field in &diff.changes {
                 println!(
                     "    {}: {} → {}",
-                    field.field_name, field.old_value, field.new_value
+                    field.path,
+                    field.old_value.as_deref().unwrap_or("null"),
+                    field.new_value.as_deref().unwrap_or("null")
                 );
             }
         }

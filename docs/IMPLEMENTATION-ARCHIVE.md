@@ -172,7 +172,6 @@ src/
 - `README.md` - Project overview
 - `CONTEXT.md` - Domain concepts
 - `ARCHITECTURE.md` - System design
-- `ROADMAP.md` - Implementation status
 - `INTEGRATION-TESTING.md` - Testing domain model
 - `CONTRIBUTING.md` - Contribution guidelines
 - `docs/adr/*.md` - Architecture decisions

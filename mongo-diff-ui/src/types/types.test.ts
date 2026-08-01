@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import type { ConnectionConfig, CollectionSelector, ChangedField, DocumentDiff, ComparisonResult, ExportConfig, Snapshot } from '@/types'
+import type { ConnectionConfig, CollectionSelector, ChangeField, DocumentDiff, ComparisonResult, ExportConfig, Snapshot } from '@/types'
 
 describe('Types', () => {
   describe('ConnectionConfig', () => {
@@ -53,35 +53,35 @@ describe('Types', () => {
     })
   })
 
-  describe('ChangedField', () => {
+  describe('ChangeField', () => {
     it('should track field changes', () => {
-      const field: ChangedField = {
+      const field: ChangeField = {
         path: 'user.name',
-        oldValue: 'John',
-        newValue: 'Jane',
+        old_value: 'John',
+        new_value: 'Jane',
         type: 'changed',
       }
       expect(field.path).toBe('user.name')
-      expect(field.oldValue).toBe('John')
-      expect(field.newValue).toBe('Jane')
+      expect(field.old_value).toBe('John')
+      expect(field.new_value).toBe('Jane')
       expect(field.type).toBe('changed')
     })
 
     it('should track added fields', () => {
-      const field: ChangedField = {
+      const field: ChangeField = {
         path: 'user.email',
-        oldValue: undefined,
-        newValue: 'john@example.com',
+        old_value: undefined,
+        new_value: 'john@example.com',
         type: 'added',
       }
       expect(field.type).toBe('added')
     })
 
     it('should track removed fields', () => {
-      const field: ChangedField = {
+      const field: ChangeField = {
         path: 'user.phone',
-        oldValue: '+1234567890',
-        newValue: undefined,
+        old_value: '+1234567890',
+        new_value: undefined,
         type: 'removed',
       }
       expect(field.type).toBe('removed')
@@ -95,8 +95,8 @@ describe('Types', () => {
         changes: [
           {
             path: 'name',
-            oldValue: 'John',
-            newValue: 'Jane',
+            old_value: 'John',
+            new_value: 'Jane',
             type: 'changed',
           },
         ],
@@ -110,10 +110,12 @@ describe('Types', () => {
     it('should contain comparison summary', () => {
       const result: ComparisonResult = {
         timestamp: '2024-01-15T10:00:00Z',
-        sourceInstance: 'mongodb://localhost:27017',
-        targetInstance: 'mongodb://localhost:27018',
-        sourceDatabase: 'production',
-        targetDatabase: 'staging',
+        source_instance: 'mongodb://localhost:27017',
+        target_instance: 'mongodb://localhost:27018',
+        source_database: 'production',
+        target_database: 'staging',
+        total_before: 100,
+        total_after: 95,
         created: { count: 5, samples: [] },
         updated: { count: 10, samples: [] },
         deleted: { count: 2, samples: [] },

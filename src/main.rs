@@ -67,13 +67,14 @@ async fn main() -> Result<()> {
     );
 
     println!("🔍 Comparing collections...");
-    let (created, updated, deleted, sample_updated, _, sample_deleted) = compare_documents(
-        docs_before.clone(),
-        docs_after.clone(),
-        &config.unique_identifier_field,
-        config.sample_limit,
-        config.diff_strategy,
-    )?;
+    let (created, updated, deleted, sample_updated, sample_created, sample_deleted) =
+        compare_documents(
+            docs_before.clone(),
+            docs_after.clone(),
+            &config.unique_identifier_field,
+            config.sample_limit,
+            config.diff_strategy,
+        )?;
     println!("✅ Comparison complete\n");
 
     print_summary(created, updated, deleted, &sample_updated, &sample_deleted);
@@ -82,18 +83,25 @@ async fn main() -> Result<()> {
     let total_after = docs_after.len();
 
     let result = ComparisonResult {
-        started_at: chrono::Utc::now().to_rfc3339(),
-        finished_at: chrono::Utc::now().to_rfc3339(),
-        collection_before: config.collection_before.clone(),
-        collection_after: config.collection_after.clone(),
+        timestamp: chrono::Utc::now().to_rfc3339(),
+        source_instance: config.mongo_uri.clone(),
+        target_instance: config.mongo_uri.clone(),
+        source_database: config.db_name.clone(),
+        target_database: config.db_name.clone(),
         total_before,
         total_after,
-        created_count: created,
-        updated_count: updated,
-        deleted_count: deleted,
-        sample_created: vec![],
-        sample_updated,
-        sample_deleted,
+        created: mongo_compare::types::CreatedDiff {
+            count: created,
+            samples: sample_created,
+        },
+        updated: mongo_compare::types::UpdatedDiff {
+            count: updated,
+            samples: sample_updated,
+        },
+        deleted: mongo_compare::types::DeletedDiff {
+            count: deleted,
+            samples: sample_deleted,
+        },
     };
 
     println!("\n💾 Writing summary to: {}", config.output_file);

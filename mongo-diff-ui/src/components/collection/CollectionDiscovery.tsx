@@ -162,8 +162,8 @@ pattern,
             onClick={() => handleTabChange('source')}
             className={`flex-1 py-3 px-4 rounded-lg font-medium transition-colors ${
               activeTab === 'source'
-                ? 'bg-emerald-600 text-white'
-                : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                ? 'bg-[var(--accent)] text-[var(--accent-text)]'
+                : 'bg-[var(--panel)] text-[var(--text-muted)] hover:bg-[var(--panel-2)]'
             }`}
           >
             Source
@@ -172,8 +172,8 @@ pattern,
             onClick={() => handleTabChange('target')}
             className={`flex-1 py-3 px-4 rounded-lg font-medium transition-colors ${
               activeTab === 'target'
-                ? 'bg-emerald-600 text-white'
-                : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                ? 'bg-[var(--accent)] text-[var(--accent-text)]'
+                : 'bg-[var(--panel)] text-[var(--text-muted)] hover:bg-[var(--panel-2)]'
             }`}
           >
             Target
@@ -181,15 +181,15 @@ pattern,
         </div>
 
         <div className="flex items-center justify-between">
-          <div className="text-sm text-slate-400">
+          <div className="text-sm text-[var(--text-muted)]">
             {currentConnected ? (
-              <span className="text-emerald-500 flex items-center">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 mr-2"></span>
+              <span className="text-[var(--accent)] flex items-center">
+                <span className="w-2 h-2 rounded-full bg-[var(--accent)] mr-2"></span>
                 Connected: {currentConnection.connectionString}
               </span>
             ) : (
-              <span className="text-rose-500 flex items-center">
-                <span className="w-2 h-2 rounded-full bg-rose-500 mr-2"></span>
+              <span className="text-[var(--danger)] flex items-center">
+                <span className="w-2 h-2 rounded-full bg-[var(--danger)] mr-2"></span>
                 Not connected
               </span>
             )}
@@ -233,12 +233,12 @@ pattern,
         />
       </div>
 
-      <div className="flex items-center justify-between pt-4 border-t border-slate-700">
+      <div className="flex items-center justify-between pt-4 border-t border-[var(--border)]">
         <Button variant="secondary" size="sm" onClick={onLoadSnapshot}>
           Load Snapshot
         </Button>
 
-        <div className="text-xs text-slate-500">
+        <div className="text-xs text-[var(--text-muted)]">
           {currentSelected.length} of {currentCollections.length} collections selected
         </div>
       </div>
