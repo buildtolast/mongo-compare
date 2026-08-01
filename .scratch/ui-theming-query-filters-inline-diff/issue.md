@@ -16,24 +16,24 @@ See `spec.md` in this directory for the full spec.
 
 ## Acceptance criteria
 
-- [ ] User can switch between 6 named themes from the results/dashboard header
-- [ ] Theme selection persists across page reloads
-- [ ] All interactive surfaces (connection panels, comparison form, results,
+- [x] User can switch between 6 named themes from the results/dashboard header
+- [x] Theme selection persists across page reloads
+- [x] All interactive surfaces (connection panels, comparison form, results,
       diff viewers, dialogs) render correctly in all 6 themes — no
       hardcoded-color elements left unthemed
-- [ ] User can supply an optional query filter (MongoDB filter-document JSON)
+- [x] User can supply an optional query filter (MongoDB filter-document JSON)
       for the Source Instance and, independently, for the Target Instance
       before running a Comparison
-- [ ] An empty/omitted filter preserves current unfiltered behavior exactly
-- [ ] Invalid filter JSON is rejected with a clear, field-scoped error before
+- [x] An empty/omitted filter preserves current unfiltered behavior exactly
+- [x] Invalid filter JSON is rejected with a clear, field-scoped error before
       any network request is made
-- [ ] Comparison Result reflects only Documents matching the supplied
+- [x] Comparison Result reflects only Documents matching the supplied
       filter(s) on each side
-- [ ] User can view the side-by-side diff of updated Documents directly in
+- [x] User can view the side-by-side diff of updated Documents directly in
       the results view, without exporting/downloading the HTML report first
-- [ ] Backend integration test (HTTP-boundary) covers filtered vs. unfiltered
+- [x] Backend integration test (HTTP-boundary) covers filtered vs. unfiltered
       comparison behavior and the invalid-filter error path
-- [ ] Frontend integration test (rendered-DOM) covers theme switching +
+- [x] Frontend integration test (rendered-DOM) covers theme switching +
       persistence, filter input validation, and the inline side-by-side view
 
 ## Priority
@@ -43,6 +43,15 @@ they were already built and are live; this ticket exists to bring them under
 test coverage and document rationale, closing gaps flagged in a Standards+Spec
 code review of the working tree.
 
+## Status
+
+Done. Test seams implemented in commit `406e93e` (`src/server_app.rs` +
+`tests/run_comparison_filter_test.rs` for the backend HTTP boundary,
+`mongo-diff-ui/src/App.integration.test.tsx` for the frontend rendered-DOM
+seam). A Standards+Spec code review ran against that diff before commit;
+its two findings (missing `build_filter_doc` unit tests, missing standalone
+toggle-back-to-Summary test) were fixed in the same commit.
+
 ## Label
 
-ready-for-agent
+ready-for-agent → done
