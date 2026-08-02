@@ -1,8 +1,65 @@
+//! Document comparison module for MongoDB document diffing
+//!
+//! This module provides functionality to compare batches of MongoDB documents
+//! and identify differences between them. It supports multiple diffing strategies
+//! including full comparison, whitelist/blacklist filtering, and deep equality checks.
+//!
+//! # Types
+//!
+//! - `ComparisonResult`: A tuple containing comparison statistics and sample documents
+//! - `FieldDiff`: A struct representing field-level differences in documents
+//!
+//! # Main Function
+//!
+//! `compare_documents` performs a three-way comparison between two document batches:
+//! - **Created**: Documents present in the after batch but not in the before batch
+//! - **Updated**: Documents present in both batches with field-level differences
+//! - **Deleted**: Documents present in the before batch but not in the after batch
+//!
+//! # Diff Strategies
+//!
+//! - **All**: Compare all fields in both documents
+//! - **Whitelist**: Only compare specified fields
+//! - **Blacklist**: Compare all fields except specified ones
+//! - **DeepEquality**: Compare only primitive fields, treating nested objects as units
+//!
+//! # Examples
+//!
+//! ```
+//! use serde_json::json;
+//! use mongo_compare::comparison::compare_documents;
+//! use mongo_compare::types::DiffStrategy;
+//!
+//! let docs_before = vec![json!({"id": "1", "name": "Alice", "age": 30})];
+//! let docs_after = vec![json!({"id": "1", "name": "Alice", "age": 31})];
+//!
+//! let result = compare_documents(
+//!     docs_before,
+//!     docs_after,
+//!     "id",
+//!     1,
+//!     DiffStrategy::All
+//! ).unwrap();
+//!
+//! assert_eq!(result.0, 0); // created
+//! assert_eq!(result.1, 1); // updated
+//! assert_eq!(result.2, 0); // deleted
+//! ```
+
 use crate::types::{ChangeField, DiffStrategy, DocumentDiff};
 use anyhow::Result;
 use serde_json::Value as JsonValue;
 
-type ComparisonResult = (
+/// A tuple type representing the result of document comparison
+///
+/// Contains:
+/// - `usize` - Number of created documents
+/// - `usize` - Number of updated documents
+/// - `usize` - Number of deleted documents
+/// - `Vec<DocumentDiff>` - Sample of updated documents with field differences
+/// - `Vec<JsonValue>` - Sample of created documents
+/// - `Vec<JsonValue>` - Sample of deleted documents
+type ComparisonStats = (
     usize,
     usize,
     usize,
@@ -11,13 +68,68 @@ type ComparisonResult = (
     Vec<JsonValue>,
 );
 
+/// Compare two batches of MongoDB documents and identify differences
+///
+/// This function performs a three-way comparison between documents from two
+/// time periods (before and after) to identify created, updated, and deleted documents.
+///
+/// # Parameters
+///
+/// - `docs_before`: Vector of documents from the baseline period
+/// - `docs_after`: Vector of documents from the comparison period
+/// - `identifier_field`: The field name used to uniquely identify documents (e.g., "_id")
+/// - `sample_limit`: Maximum number of samples to collect for each change type (0 = no limit)
+/// - `diff_strategy`: The strategy to use for comparing field differences
+///
+/// # Returns
+///
+/// Returns a `ComparisonStats` tuple containing:
+/// - The count of newly created documents
+/// - The count of updated documents
+/// - The count of deleted documents
+/// - A sample of updated documents with their field differences
+/// - A sample of created documents
+/// - A sample of deleted documents
+///
+/// # Behavior
+///
+/// - Documents are identified by their value in the `identifier_field`
+/// - Documents in both batches with the same identifier are compared
+/// - Documents only in `docs_after` are considered created
+/// - Documents only in `docs_before` are considered deleted
+/// - Documents in both batches are compared using the specified `diff_strategy`
+/// - If `sample_limit` is 0, no samples are collected
+/// - Documents without the identifier field are skipped with a warning
+///
+/// # Example
+///
+/// ```
+/// use serde_json::json;
+/// use mongo_compare::comparison::compare_documents;
+/// use mongo_compare::types::DiffStrategy;
+///
+/// let before = vec![
+///     json!({"id": "1", "name": "Alice", "age": 30, "email": "alice@example.com"}),
+///     json!({"id": "2", "name": "Bob", "age": 25}),
+/// ];
+///
+/// let after = vec![
+///     json!({"id": "1", "name": "Alice", "age": 31, "email": "alice@example.com"}),
+///     json!({"id": "3", "name": "Charlie", "age": 35, "email": "charlie@example.com"}),
+/// ];
+///
+/// let result = compare_documents(before, after, "id", 1, DiffStrategy::All).unwrap();
+/// assert_eq!(result.0, 1); // 1 created (id=3)
+/// assert_eq!(result.1, 1); // 1 updated (id=1)
+/// assert_eq!(result.2, 1); // 1 deleted (id=2)
+/// ```
 pub fn compare_documents(
     docs_before: Vec<JsonValue>,
     docs_after: Vec<JsonValue>,
     identifier_field: &str,
     sample_limit: usize,
     diff_strategy: DiffStrategy,
-) -> Result<ComparisonResult> {
+) -> Result<ComparisonStats> {
     let mut created_count = 0;
     let mut updated_count = 0;
     let mut deleted_count = 0;
@@ -98,10 +210,116 @@ pub fn compare_documents(
     ))
 }
 
+/// Represents field-level differences between two document versions
+///
+/// This struct serves as a container for field-level change information
+/// discovered during document comparison. It aggregates all `ChangeField`
+/// instances found in a comparison operation, making it easy to serialize
+/// and report detailed differences.
+///
+/// # Usage Context
+///
+/// - Created when `find_field_diffs()` is called to compare two documents
+/// - Contains only the fields that actually changed (not all fields in the document)
+/// - Each field can indicate whether it was added, removed, or changed
+/// - Field paths use dot notation for nested fields (e.g., "address.city")
+///
+/// # Relationship to Other Types
+///
+/// - **`FieldDiff`**: Aggregates individual field changes for a single document comparison
+/// - **`ComparisonResult`**: Contains multiple `FieldDiff` instances for all updated documents
+/// - **`ChangeField`**: Represents a single field-level change with old/new values
+///
+/// # Example
+///
+/// ```
+/// use serde_json::json;
+/// use mongo_compare::comparison::find_field_diffs;
+/// use mongo_compare::types::DiffStrategy;
+///
+/// let before = json!({"name": "Alice", "age": 30, "email": "alice@example.com"});
+/// let after = json!({"name": "Alice", "age": 31, "email": "alice@example.com"});
+///
+/// let result = find_field_diffs(&before, &after, "id", DiffStrategy::All).unwrap();
+/// println!("{} fields changed", result.changed_fields.len());
+///
+/// for change in result.changed_fields {
+///     println!("Field '{}' changed from '{}' to '{}'", 
+///         change.path, 
+///         change.old_value.unwrap_or_else(|| "N/A".to_string()),
+///         change.new_value.unwrap_or_else(|| "N/A".to_string())
+///     );
+/// }
+/// ```
+///
+/// # Fields
+///
+/// - `changed_fields`: Vector of individual field changes with their old and new values
+///   - Each change includes the field path, old value (if existed), new value (if added)
+///   - Change type indicates "changed", "added", or "removed"
+///   - Nested objects are flattened with dot notation in the path
+///   - Field paths are deduplicated to avoid reporting the same field multiple times
 pub struct FieldDiff {
     pub changed_fields: Vec<ChangeField>,
 }
 
+/// Find field-level differences between two documents
+///
+/// This function compares two JSON documents and identifies which fields
+/// have changed, been added, or been removed. The behavior depends on the
+/// provided `diff_strategy`.
+///
+/// # Parameters
+///
+/// - `doc_before`: The original document from the baseline period
+/// - `doc_after`: The document from the comparison period
+/// - `identifier_field`: The field name used to identify documents (not compared)
+/// - `strategy`: The diffing strategy to apply
+///
+/// # Returns
+///
+/// Returns a `FieldDiff` struct containing a vector of `ChangeField` instances
+/// describing all differences found.
+///
+/// # Diff Strategies
+///
+/// ## DiffStrategy::All
+///
+/// Compares all fields in both documents. Nested objects are recursively compared.
+/// This is the default behavior when no specific strategy is needed.
+///
+/// ## DiffStrategy::Whitelist(fields)
+///
+/// Only compares the specified fields. If a field is missing in one document,
+/// it's reported as added or removed. Nested objects in whitelisted fields
+/// are recursively compared.
+///
+/// ## DiffStrategy::Blacklist(fields)
+///
+/// Compares all fields except those in the blacklist. Fields listed here are
+/// ignored during comparison, even if they differ between documents.
+///
+/// ## DiffStrategy::DeepEquality
+///
+/// Compares only primitive fields (strings, numbers, booleans). Nested objects
+/// are treated as atomic values - their internal structure is not compared.
+/// This is useful when you want to know if a document has changed, without
+/// caring about which specific fields changed.
+///
+/// # Example
+///
+/// ```
+/// use serde_json::json;
+/// use mongo_compare::comparison::find_field_diffs;
+/// use mongo_compare::types::DiffStrategy;
+///
+/// let before = json!({"name": "Alice", "age": 30});
+/// let after = json!({"name": "Alice", "age": 31});
+///
+/// let result = find_field_diffs(&before, &after, "id", DiffStrategy::All).unwrap();
+///
+/// // Result would contain one change field for "age"
+/// ```
 pub fn find_field_diffs(
     doc_before: &JsonValue,
     doc_after: &JsonValue,
